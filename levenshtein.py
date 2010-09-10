@@ -1,3 +1,20 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+"""
+levenshtein.py
+
+Created by Brant Faircloth on 10 September 2010 11:53 PDT (-0700).
+Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+
+PURPOSE:  Determines the edit distances between various groups of linkers in the 
+configuration file passed on stdin.
+
+USAGE:  python helpers/levenshtein.py --configuration=linker-py.conf \
+        --section=MidLinkerGroups --verbose
+
+"""
+
 import pdb
 import operator
 import optparse
@@ -18,6 +35,9 @@ def interface():
     p.add_option('--section', '-s', dest = 'section', action = 'store',\
         type='string', default = None, \
         help='The section of the config file to evaluate', metavar='FILE')
+    p.add_option('--verbose', dest = 'verbose', action='store_true', default=False, 
+        help='Print edit distance of all combinations')
+    
     (options,arg) = p.parse_args()
     if not options.conf:
         p.print_help()
@@ -141,11 +161,21 @@ def main():
     for g in groups:
         #pdb.set_trace()
         ed = getDistance(groups[g], g, distances = True)
-        for d in ed:
-            print d
-        pdb.set_trace()
-        ed[0].sort()
-        print '%s %s\n\tlinkers = %s\n\tminimum edit distance = %s' % (options.section, g, str(ed[0]), ed[1])
+        #pdb.set_trace()
+        if len(groups[g]) > 1:
+            # get minimum distance
+            min_dist = ed[0][2]
+            print '{0} {1}\n\n\tminimum edit distance = {2}\n\n\tlinkers with minimum edit distance:'.format(options.section, g, min_dist)
+            for l_set in ed:
+                if l_set[2] == min_dist:
+                    print '\t\t{0} <=> {1}'.format(l_set[0], l_set[1])
+            if options.verbose:
+                print '\n\tedit distances of other linker combinations:'
+                for d in ed:
+                    print '\t\t{0} <=> {1}; edit distance = {2}'.format(d[0],d[1],d[2])
+            print '\n'
+        else:
+            print '{0} {1}\n\n\tthere is only 1 tag in this group'.format(options.section, g)
 
     
 if __name__ == '__main__':
