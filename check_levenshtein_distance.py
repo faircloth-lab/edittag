@@ -72,8 +72,7 @@ def hamming_distance(s1, s2):
 def levenshtein(a,b):
     """Pure python version to compute the levenshtein distance between a and b.
     The Levenshtein distance includes insertions, deletions, substitutions; 
-    unlike the Hamming distance, which is substitutions only. See more:  
-    http://hetland.org/coding/python/levenshtein.py
+    unlike the Hamming distance, which is substitutions only.
     
     ORIGINALLY FROM:  http://hetland.org/coding/python/levenshtein.py
     
