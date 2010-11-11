@@ -70,13 +70,10 @@ def hamming_distance(s1, s2):
     return sum([ch1 != ch2 for ch1, ch2 in zip(s1, s2)])
 
 def levenshtein(a,b):
-    '''Calculates the levenshtein distance between a and b.
-    
-    Insertions, deletions, substitutions
-    
-    From here:  http://hetland.org/coding/python/levenshtein.py
-    
-    '''
+    """Pure python version to compute the levenshtein distance between a and b.
+    The Levenshtein distance includes insertions, deletions, substitutions; 
+    unlike the Hamming distance, which is substitutions only. See more:  
+    http://hetland.org/coding/python/levenshtein.py"""
     n, m = len(a), len(b)
     if n > m:
         # Make sure n <= m, to use O(min(n,m)) space
@@ -93,27 +90,9 @@ def levenshtein(a,b):
             current[j] = min(add, delete, change)
     return current[n]
 
-def getDistanceC(linkers, *args, **kwargs):
-    #pdb.set_trace()
-    linker_dist = []
-    for l1 in xrange(len(linkers)):
-        s1 = linkers[l1]
-        for s2 in linkers[l1+1:]:
-            edit_distance = Levenshtein.distance(s1[1],s2[1])
-            linker_dist.append((s1[0], s2[0], edit_distance))
-    #pdb.set_trace()
-    link_list = [i[0] for i in linkers]
-    if len(linker_dist) == 0:
-        min_dist = 'NA'
-    else:
-        min_dist = min([i[2] for i in linker_dist])
-    if kwargs and kwargs['distances']:
-        linker_sorted = sorted(linker_dist, key=operator.itemgetter(2))
-        return linker_sorted
-    else:
-        return link_list, min_dist
-
-def getDistance(linkers, *args, **kwargs):
+def get_distance(linkers, *args, **kwargs):
+    """given a set of tags, determine the levenshtein distance between them.
+    Flip over to C when called (and the Levenshtein module is installed)."""
     #pdb.set_trace()
     linker_dist = []
     for l1 in xrange(len(linkers)):
@@ -155,7 +134,7 @@ def filter_tags(groups, g, ed, min_dist, desired_dist, **kwargs):
         print "\t{0}".format('\n\t'.join(bad_tags))
         good_tags = [g for g in groups if g[0] not in bad_tags]
         #pdb.set_trace()
-        ed = getDistance(good_tags, 1, **kwargs)
+        ed = get_distance(good_tags, 1, **kwargs)
     return good_tags
     
 def main():
@@ -195,7 +174,7 @@ def main():
         
     for g in groups:
         #pdb.set_trace()
-        ed = getDistance(groups[g], g, distances = True, use_c = options.use_c)
+        ed = get_distance(groups[g], g, distances = True, use_c = options.use_c)
         #pdb.set_trace()
         if len(groups[g]) > 1:
             # get minimum distance
