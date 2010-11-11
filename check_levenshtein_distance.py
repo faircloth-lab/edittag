@@ -146,7 +146,7 @@ def main():
         try:
             Levenshtein.distance('cat','cant')
         except:
-            "Cannot find Levenshtein modules... dropping back to pure Python"
+            print "Cannot find Levenshtein modules... dropping back to pure Python"
             options.use_c = False
     conf = ConfigParser.ConfigParser()
     conf.read(options.conf)
