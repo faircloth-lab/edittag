@@ -117,22 +117,28 @@ def worker(tasks, results):
         tasks.task_done()
     return
 
-def single_worker(chunks, edit_distance, tag_length, final = False):
-    # just to ensure we're putting things where we think...
-    tag_position = []
-    distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
-    for k, chunk in enumerate(chunks):
-        distance_per_chunk = [Levenshtein.distance(chunk[0],c[1]) for c in chunk[1]]
-        distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
-        # keep track of tag number
-        tag_position.append(chunk[0])
-        # stick those values in an array
-        for i in sorted(distance_per_chunk_counts.keys()):
-            distance_array[k][i] = distance_per_chunk_counts[i]
-        #pdb.set_trace()
-        if k % 100 == 0:
-            print "\t\tTag {0}".format(k)
-    return distance_array, numpy.array(tag_position)
+def single_worker(tasks, results, edit_distance, tag_length):
+    for position, chunks in iter(tasks.get, 'STOP'):
+        # just to ensure we're putting things where we think...
+        distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
+        print "chunk of {0}".format(len(chunks))
+        for k, chunk in enumerate(chunks):
+            distance_per_chunk = [Levenshtein.distance(chunk[0],c[1]) for c in chunk[1]]
+            distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
+            # stick those values in an array
+            for i in sorted(distance_per_chunk_counts.keys()):
+                distance_array[k][i] = distance_per_chunk_counts[i]
+            #pdb.set_trace()
+            #if k % 100 == 0:
+            #    print "\t\tTag {0}".format(k)
+        fd, tf = tempfile.mkstemp(suffix='.temptext')
+        os.close(fd)
+        d_array = open(tf, 'w')
+        cPickle.dump(distance_array, d_array)
+        d_array.close()
+        results.put((position, tf))
+        tasks.task_done()
+    return
 
 def single_worker2(chunks, edit_distance):
     all_keepers = []
@@ -175,23 +181,30 @@ def single_worker2(chunks, edit_distance):
         all_keepers.append(tags[keepers])
     return all_keepers
 
-def q_runner(n_procs, chunks, good_tags, count, function, *args):
+def q_runner(n_procs, function, chunks, edit_distance, **kwargs):
     '''generic function used to start worker processes'''
     myResults = []
     tasks     = multiprocessing.JoinableQueue()
     results   = multiprocessing.Queue()
-    print 'there are {0} chunks'.format(len(chunks))
-    for each in chunks:
-        tasks.put([each, good_tags, count])
-    #pdb.set_trace()    
-    Workers = [multiprocessing.Process(target=worker, args = (tasks, results)) for i in xrange(n_procs)]
+    re_chunk = []
+    for i in xrange(0,len(chunks),500):
+        group_chunk = chunks[i:i+500]
+        re_chunk.append(group_chunk)
+    for k,v in enumerate(re_chunk):
+        if kwargs['tag_length']:
+            tasks.put([k, v])
+        else:
+            tasks.put([k, v])
+    if len(re_chunk) < n_procs:
+        n_procs = len(re_chunk)   
+    Workers = [multiprocessing.Process(target=function, args = (tasks, results, edit_distance, kwargs['tag_length'])) for i in xrange(n_procs)]
     for each in Workers:
         each.start()
     for each in xrange(n_procs):
         tasks.put('STOP')
     for process in Workers:
         process.join()
-    for r in xrange(len(chunks)):
+    for r in xrange(len(re_chunk)):
         myResults.append(results.get())
     tasks.close()
     results.close()
@@ -201,14 +214,16 @@ def q_runner(n_procs, chunks, good_tags, count, function, *args):
 def chunker(good):
     """chunk shit up"""
     chunked = ()
+    ordered_tags = []
     # make sure the vectors are sorted
     good = sorted(good, key=itemgetter(1))
     for tag in good:
         chunked += ((tag[1], good),)
+        ordered_tags.append(tag[1])
     #chunked = []
     #for i in xrange(0, len(l), n):
     #    chunked.append([[i],l[i:i+n]])
-    return chunked
+    return chunked, numpy.array(ordered_tags)
 
 def self_comp(seq):
     '''Return reverse complement of seq'''
@@ -255,14 +270,27 @@ def main():
             tag_name = '{0}'.format(count)
             good_tags += ((tag_name, tag_seq),)
             count += 1
-    chunks = chunker(good_tags)
+    chunks, tags = chunker(good_tags)
     print '[1] There are {0} chunks'.format(len(chunks))
     print '[2] Calculating the Levenshtein distance across the chunks... (Slow)'
     if options.clev:
         print '\t[C] Using the C version of Levenshtein...'
         #distance_pairs = getDistanceC(good_tags, distances = True)
-        #results = q_runner(n_procs, chunks, good_tags, count, worker)
-        distances, tags = single_worker(chunks, options.ed, options.tl)
+        results = q_runner(6, single_worker, chunks, options.ed, tag_length = options.tl)
+        # need to rebuild the arrays from the component parts
+        # first, ensure the filenames are sorted according to their input order
+        results = sorted(results, key=itemgetter(0))
+        distances = None
+        print results
+        for filename in results:
+            temp_array = cPickle.load(open(filename[1]))
+            if distances == None:
+                distances = temp_array
+            else:
+                distances = numpy.vstack((distances, temp_array))
+            os.remove(filename[1])
+        #pdb.set_trace()
+        #distances, tags = single_worker(chunks, options.ed, options.tl)
     # find those tags with the comparisons >= options.ed
     print '[4] Finding the set of tags with the most matches at edit_distance >= {0}'.format(options.ed)
     most_indices = numpy.nonzero(distances[:,options.ed] >= max(distances[:,options.ed]))[0]
