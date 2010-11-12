@@ -18,10 +18,10 @@ import optparse
 import numpy
 import multiprocessing
 import Levenshtein
-import levenshtein
 import operator
 import tempfile
 import cPickle
+from operator import itemgetter
 #from levenshtein import getDistance
 #from levenshtein import getDistanceC
 
@@ -117,50 +117,63 @@ def worker(tasks, results):
         tasks.task_done()
     return
 
-def single_worker(chunk, good_tag, edit_distance, final = False):
-    #pdb.set_trace()
-    best_tags = []
-    for c in chunk:
-        chunk_index = c[0][0]
-        chunk_values = c[1]
-        temp_array = numpy.zeros((len(chunk_values), len(chunk_values)), dtype=numpy.dtype('uint8'))
-        #print '\t[P] Serializing the data and writing it to a tempfile...'
-        fd, tf = tempfile.mkstemp(suffix='.temptext')
-        #os.close(fd)
-        p_file = open(tf, 'w')
-        #print '[4] Writing results to temporary file {0}...'.format(tf)
-        temp_array = getDistanceC(chunk_index, chunk_values, good_tag, temp_array, distances = True)
-        for r, row in enumerate(temp_array):
-            for c, column in enumerate(row):
-                p_file.write('{0}\t'.format(column))
-            p_file.write('\n')
-        p_file.close()        
-        pdb.set_trace()
-        # get the full array from its 1/2
-        full_temp_array = temp_array + temp_array.transpose()
-        # get the vector (row) of data with the largest count of tags with edit
-        # distance > edit_distance
-        positions = []
-        holder = []
-        all_edit_distances = (full_temp_array >= edit_distance).sum(axis = 1)
-        for pos, row in enumerate(all_edit_distances):
-            if row == max(all_edit_distances):
-                counts = numpy.bincount(full_temp_array[pos])
-                positions.append(pos)
-                holder.append(counts.tolist())
-        # get index of the row containing the most differences from other tags
-        # if there is a tie, this should return the first element meeting the
-        # criteria
-        best_row = positions[holder.index(max(holder))]
-        print chunk_values[best_row]
-        best_tags.append(chunk_values[best_row])
+def single_worker(chunks, edit_distance, tag_length, final = False):
+    # just to ensure we're putting things where we think...
+    tag_position = []
+    distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
+    for k, chunk in enumerate(chunks):
+        distance_per_chunk = [Levenshtein.distance(chunk[0],c[1]) for c in chunk[1]]
+        distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
+        # keep track of tag number
+        tag_position.append(chunk[0])
+        # stick those values in an array
+        for i in sorted(distance_per_chunk_counts.keys()):
+            distance_array[k][i] = distance_per_chunk_counts[i]
         #pdb.set_trace()
-    if not final:
-        return best_tags
-    else:
-        pdb.set_trace()
-        print all_edit_distances[best_row]
-            
+        if k % 100 == 0:
+            print "\t\tTag {0}".format(k)
+    return distance_array, numpy.array(tag_position)
+
+def single_worker2(chunks, edit_distance):
+    all_keepers = []
+    print "[5] Scanning {0} reduced tag sets (slow)...".format(len(chunks))
+    for k, chunk in enumerate(chunks):
+        print "\t\tSet {0}".format(k)
+        # get only those tags, compared to the base tag that have 
+        # edit_distance >= our minimum - we're essentially regenerating
+        # and filtering the pairwise comparisons above
+        good_comparisons = [c for c in chunk[1] if \
+            Levenshtein.distance(chunk[0],c[1]) >= edit_distance]
+        # add in the base tag.  this is now the set of tags, when compared
+        # to the base tag, that have edit distance >= 5
+        good_comparisons.insert(0,('0', chunk[0]))
+        # now we need to compare all the tags to one another, not just to the
+        # base tag
+        #results = [[Levenshtein.distance(row[1], column[1]) for column in good_comparisons] for row in good_comparisons]
+        results = []
+        tags = numpy.array([])
+        for k,row in enumerate(good_comparisons):
+            tags = numpy.append(tags, row[1])
+            column = [0] * len(good_comparisons)
+            for k2, element in enumerate(good_comparisons[k:]):
+                column[k + k2] = Levenshtein.distance(row[1], element[1])
+            results.append(column)
+        results = numpy.array(results)
+        keepers = numpy.array([], dtype=int)
+        for k,v in enumerate(results[:,0]):
+            # append the 0th element (our base tag)
+            if not keepers.any():
+                keepers = numpy.append(keepers,k)
+            # get the column of edit distances for k and reshape it
+            else:
+                column_to_row = numpy.reshape(results[:,k], len(results[:,k]))
+                # reindex it by the tags we already have in the set
+                if sum(column_to_row[keepers] >= edit_distance) == len(column_to_row[keepers]):
+                    keepers = numpy.append(keepers,int(k))
+        # we need to get all sets of keepers across all chunks.  we will
+        # determine the largest batch later...
+        all_keepers.append(tags[keepers])
+    return all_keepers
 
 def q_runner(n_procs, chunks, good_tags, count, function, *args):
     '''generic function used to start worker processes'''
@@ -185,11 +198,16 @@ def q_runner(n_procs, chunks, good_tags, count, function, *args):
     #pdb.set_trace()
     return myResults
 
-def chunker(l, n):
-    '''Yield successive n-sized chunks from l'''
-    chunked = []
-    for i in xrange(0, len(l), n):
-        chunked.append([[i],l[i:i+n]])
+def chunker(good):
+    """chunk shit up"""
+    chunked = ()
+    # make sure the vectors are sorted
+    good = sorted(good, key=itemgetter(1))
+    for tag in good:
+        chunked += ((tag[1], good),)
+    #chunked = []
+    #for i in xrange(0, len(l), n):
+    #    chunked.append([[i],l[i:i+n]])
     return chunked
 
 def self_comp(seq):
@@ -206,7 +224,7 @@ def main():
         '''
     n_procs = 6
     count = 0
-    good_tags = []
+    good_tags = ()
     good_tags_dict = {}
     options, args = interface()
     print '[1] Generating all combinations of tags...'
@@ -235,78 +253,31 @@ def main():
                 good = False
         if good:
             tag_name = '{0}'.format(count)
-            good_tags.append((tag_name, tag_seq))
+            good_tags += ((tag_name, tag_seq),)
             count += 1
-    # index the boogers, so we can pull out the good ones
-    for k, v in good_tags:
-        good_tags_dict.setdefault(int(k), []).append(v)
-    # chunk the good_tags list into nproc approx evenly sized chunks
-    # 500 is a bit too big with 8GB RAM
-    #pdb.set_trace()
-    if len(good_tags)/n_procs > 250:
-        chunk_count = 250
-    else:
-        chunk_count = len(good_tags)/n_procs
-    chunks = list(chunker(good_tags, chunk_count))
-    print '[I] There are {0} chunks of size {1}'.format(len(chunks), chunk_count)
-    print '[I] Count = {0}'.format(count)
-    # get the pairwise distance
-    #pdb.set_trace()
-    print '[3] Calculating the Levenshtein distance across remaining pairs... (Slow)'
+    chunks = chunker(good_tags)
+    print '[1] There are {0} chunks'.format(len(chunks))
+    print '[2] Calculating the Levenshtein distance across the chunks... (Slow)'
     if options.clev:
         print '\t[C] Using the C version of Levenshtein...'
         #distance_pairs = getDistanceC(good_tags, distances = True)
-        results = q_runner(n_procs, chunks, good_tags, count, worker)
-        #results = single_worker(chunks, good_tags, options.ed)
-    #else:
-    #    distance_pairs = getDistance(good_tags, distances = True)
-    
-    #single_worker([[[0], results]], good_tags, options.ed, final=True)
-    #pdb.set_trace()
-    hm = numpy.zeros((count, count), dtype=numpy.dtype('uint8'))
-    print '[4] Reading text output into array...'
-    for infile in results:
-        pkl = open(infile, 'r')
-        temp_array = cPickle.load(pkl)
-        hm += temp_array
-        pkl.close()
-        #for tag_pair in pkl.readlines():
-        #    #pdb.set_trace()
-        #    # jam all of our distances into an array
-        #    t1, t2, d = [int(i) for i in tag_pair.strip('\n').split(',')]
-        #    hm[t1,t2] = d
-    #pdb.set_trace()    
-    print '[5] Empirically determining the greatest number of returnable tags of Levenshtein distance {0}...'.format(options.ed)
-    # get the vector (row) of data with the largest count of tags with edit
-    # distance > options.ed
-    max_row_sum = [None, 0]
-    for pos, row in enumerate(hm):
-        bool_row_sum = sum(row >= options.ed)
-        if bool_row_sum > max_row_sum[1]:
-            max_row_sum = [pos, bool_row_sum]
-    # get the indices of those values with edit distances >= options.ed
-    best_row = hm[max_row_sum[0]]
-    #pdb.set_trace()
-    index = numpy.argwhere(best_row >= options.ed)
-    keepers = numpy.array([], dtype=int)
-    for i in index:
-        if not keepers.any():
-            keepers = numpy.append(keepers,int(i))
+        #results = q_runner(n_procs, chunks, good_tags, count, worker)
+        distances, tags = single_worker(chunks, options.ed, options.tl)
+    # find those tags with the comparisons >= options.ed
+    print '[4] Finding the set of tags with the most matches at edit_distance >= {0}'.format(options.ed)
+    most_indices = numpy.nonzero(distances[:,options.ed] >= max(distances[:,options.ed]))[0]
+    most_chunked = ()
+    for tag in tags[most_indices]:
+        most_chunked += ((tag, good_tags),)
+    all_keepers = single_worker2(most_chunked, options.ed)
+    max_length = 0
+    for keeper in all_keepers:
+        if len(keeper) > max_length:
+            largest = keeper
         else:
-            # get the column of edit distances for i and reshape it
-            column_to_row = numpy.reshape(hm[:,i], len(hm[:,i]))
-            # reindex by the keepers
-            if sum(column_to_row[keepers] >= options.ed) == len(column_to_row[keepers]):
-                keepers = numpy.append(keepers,int(i))
-    print '\n'
-    #pdb.set_trace()
-    for k in keepers:
-        print 'Tag{0} = {1}'.format(k, good_tags_dict[k][0])
-    #print chunk_values[best_row]
-    #best_tags.append(chunk_values[best_row])
-    
-    #pdb.set_trace()    
-    #outp.close()
+            pass
+    for k,v in enumerate(largest):
+        print "Tag{0} = {1}".format(k,v)
 
 if __name__ == '__main__':
     main()
