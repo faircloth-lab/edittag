@@ -24,6 +24,7 @@ import cPickle
 from operator import itemgetter
 #from levenshtein import getDistance
 #from levenshtein import getDistanceC
+#import editdist as Levenshtein
 
 
 def interface():
@@ -37,6 +38,9 @@ type='int', default = 6, help='The desired tag length')
     
     p.add_option('--edit-distance', dest = 'ed', action='store', 
 type='int', default = 3, help='The desired edit distance')
+
+    p.add_option('--multiprocessing', dest = 'multiprocessing', 
+action='store_true', default=False, help='Use multiprocessing')
 
     p.add_option('--no-polybase', dest = 'polybase', action='store_true', default=False, 
 help='Remove tags with > 2 identical nucleotides in a row')
@@ -56,46 +60,6 @@ help='Use the C version of Levenshtein (faster)')
         p.print_help()
         sys.exit(2)
     return options, arg
-
-
-def getDistanceC1(chunk_index, chunk_values, good_tags, temp_array, *args, **kwargs):
-    #pdb.set_trace()
-    #linker_dist = []
-    for p1, s1 in enumerate(chunk_values):
-        #new_chunk_index = chunk_index
-        p2 = p1 + 1
-        for s2 in chunk_values[p2:]:
-            edit_distance = Levenshtein.distance(s1[1],s2[1])
-            try:
-                temp_array[p1, p2] = edit_distance
-            except IndexError:
-                pdb.set_trace()
-            p2 += 1
-        #chunk_index += 1
-    #return sorted(linker_dist, key=operator.itemgetter(2))
-    #pdb.set_trace()
-    return temp_array
-
-
-def getDistanceC(chunk_index, chunk_values, good_tags, temp_array, *args, **kwargs):
-    #pdb.set_trace()
-    #linker_dist = []
-    for p1, s1 in enumerate(chunk_values):
-        new_chunk_index = chunk_index
-        for p2, s2 in enumerate(good_tags[new_chunk_index + 1:]):
-            new_chunk_index += p2
-            #print '\t', s1, new_chunk_index + 1
-            edit_distance = Levenshtein.distance(s1[1],s2[1])
-            temp_array[int(s1[0]),int(s2[0])] = int(edit_distance)
-            #if edit_distance >= 5:
-            #    p_file.write('{0},{1},{2}\n'.format(s1[0], s2[0], edit_distance))
-        #print chunk_index
-        chunk_index += 1
-        #pdb.set_trace()
-    #return sorted(linker_dist, key=operator.itemgetter(2))
-    #pdb.set_trace()
-    return temp_array
-        
 
 def worker(tasks, results):
     for chunk, good_tag, count in iter(tasks.get, 'STOP'):
@@ -117,11 +81,12 @@ def worker(tasks, results):
         tasks.task_done()
     return
 
-def single_worker(tasks, results, edit_distance, tag_length):
+def worker(tasks, results, edit_distance, tag_length):
     for position, chunks in iter(tasks.get, 'STOP'):
         # just to ensure we're putting things where we think...
         distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
-        print "chunk of {0}".format(len(chunks))
+        sys.stdout.write(".")
+        sys.stdout.flush()
         for k, chunk in enumerate(chunks):
             distance_per_chunk = [Levenshtein.distance(chunk[0],c[1]) for c in chunk[1]]
             distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
@@ -140,71 +105,99 @@ def single_worker(tasks, results, edit_distance, tag_length):
         tasks.task_done()
     return
 
-def single_worker2(chunks, edit_distance):
+
+def get_reduced_distances(chunk, edit_distance):
     all_keepers = []
-    print "[5] Scanning {0} reduced tag sets (slow)...".format(len(chunks))
-    for k, chunk in enumerate(chunks):
-        print "\t\tSet {0}".format(k)
-        # get only those tags, compared to the base tag that have 
-        # edit_distance >= our minimum - we're essentially regenerating
-        # and filtering the pairwise comparisons above
-        good_comparisons = [c for c in chunk[1] if \
-            Levenshtein.distance(chunk[0],c[1]) >= edit_distance]
-        # add in the base tag.  this is now the set of tags, when compared
-        # to the base tag, that have edit distance >= 5
-        good_comparisons.insert(0,('0', chunk[0]))
-        # now we need to compare all the tags to one another, not just to the
-        # base tag
-        #results = [[Levenshtein.distance(row[1], column[1]) for column in good_comparisons] for row in good_comparisons]
-        results = []
-        tags = numpy.array([])
-        for k,row in enumerate(good_comparisons):
-            tags = numpy.append(tags, row[1])
-            column = [0] * len(good_comparisons)
-            for k2, element in enumerate(good_comparisons[k:]):
-                column[k + k2] = Levenshtein.distance(row[1], element[1])
-            results.append(column)
-        results = numpy.array(results)
-        keepers = numpy.array([], dtype=int)
-        for k,v in enumerate(results[:,0]):
-            # append the 0th element (our base tag)
-            if not keepers.any():
-                keepers = numpy.append(keepers,k)
-            # get the column of edit distances for k and reshape it
-            else:
-                column_to_row = numpy.reshape(results[:,k], len(results[:,k]))
-                # reindex it by the tags we already have in the set
-                if sum(column_to_row[keepers] >= edit_distance) == len(column_to_row[keepers]):
-                    keepers = numpy.append(keepers,int(k))
-        # we need to get all sets of keepers across all chunks.  we will
-        # determine the largest batch later...
-        all_keepers.append(tags[keepers])
-    return all_keepers
+    #print "[5] Scanning {0} reduced tag sets (slow)...".format(len(chunks))
+    #for k, chunk in enumerate(chunks):
+    #print "\t\tSet {0}".format(k)
+    # get only those tags, compared to the base tag that have 
+    # edit_distance >= our minimum - we're essentially regenerating
+    # and filtering the pairwise comparisons above
+    good_comparisons = [c for c in chunk[1] if \
+        Levenshtein.distance(chunk[0],c[1]) >= edit_distance]
+    print "good_comparisons", len(good_comparisons)
+    # add in the base tag.  this is now the set of tags, when compared
+    # to the base tag, that have edit distance >= 5
+    good_comparisons.insert(0,('0', chunk[0]))
+    # now we need to compare all the tags to one another, not just to the
+    # base tag
+    distance_lists = [[Levenshtein.distance(row[1], column[1]) for column in good_comparisons] for row in good_comparisons]
+    distance_results = numpy.array(distance_lists, dtype=numpy.dtype('uint8'))
+    #pdb.set_trace()
+    #distance_results = []
+    tags = numpy.array([elem[1] for elem in good_comparisons])
+    #tags = numpy.array([])
+    #for k,row in enumerate(good_comparisons):
+    #    tags = numpy.append(tags, row[1])
+    #    column = [0] * len(good_comparisons)
+    #    for k2, element in enumerate(good_comparisons[k:]):
+    #        column[k + k2] = Levenshtein.distance(row[1], element[1])
+    #    distance_results.append(column)
+    distance_results = numpy.array(distance_results)
+    keepers = numpy.array([], dtype=int)
+    for k,v in enumerate(distance_results[:,0]):
+        # append the 0th element (our base tag)
+        if not keepers.any():
+            keepers = numpy.append(keepers,k)
+        # get the column of edit distances for k and reshape it
+        else:
+            column_to_row = numpy.reshape(distance_results[:,k], len(distance_results[:,k]))
+            # reindex it by the tags we already have in the set
+            if sum(column_to_row[keepers] >= edit_distance) == len(column_to_row[keepers]):
+                keepers = numpy.append(keepers,int(k))
+    # we need to get all sets of keepers across all chunks.  we will
+    # determine the largest batch later...
+    all_keepers.append(tags[keepers])
+    # pickly pickly all_keepers and store is as a temp file
+    fd, tf = tempfile.mkstemp(suffix='.temptext')
+    os.close(fd)
+    keepers_out = open(tf, 'w')
+    cPickle.dump(all_keepers, keepers_out)
+    keepers_out.close()
+    return tf
+
+def worker2(tasks, results, edit_distance):
+    for position, chunk in iter(tasks.get, 'STOP'):
+        sys.stdout.write(".")
+        sys.stdout.flush()
+        tf = get_reduced_distances(chunk, edit_distance)
+        results.put(tf)
+        tasks.task_done()
+    return
+
+def single_worker2(chunks, edit_distance):
+    results = []
+    sys.stdout.write("\tThere are {0} chunks. Processing: ".format(len(chunks), len(chunks[0][1])))
+    for chunk in chunks:
+        sys.stdout.write(".")
+        sys.stdout.flush()
+        tf = get_reduced_distances(chunk, edit_distance)
+        results.append(tf)
+    return results
 
 def q_runner(n_procs, function, chunks, edit_distance, **kwargs):
     '''generic function used to start worker processes'''
     myResults = []
     tasks     = multiprocessing.JoinableQueue()
     results   = multiprocessing.Queue()
-    re_chunk = []
-    for i in xrange(0,len(chunks),500):
-        group_chunk = chunks[i:i+500]
-        re_chunk.append(group_chunk)
-    for k,v in enumerate(re_chunk):
-        if kwargs['tag_length']:
-            tasks.put([k, v])
-        else:
-            tasks.put([k, v])
-    if len(re_chunk) < n_procs:
-        n_procs = len(re_chunk)   
-    Workers = [multiprocessing.Process(target=function, args = (tasks, results, edit_distance, kwargs['tag_length'])) for i in xrange(n_procs)]
+    sys.stdout.write("\tThere are {0} chunks. Processing: ".format(len(chunks), len(chunks[0][1])))
+    sys.stdout.flush()
+    for k,v in enumerate(chunks):
+        tasks.put([k, v])
+    if len(chunks) < n_procs:
+        n_procs = len(chunks)   
+    if kwargs:
+        Workers = [multiprocessing.Process(target=function, args = (tasks, results, edit_distance, kwargs['tag_length'])) for i in xrange(n_procs)]
+    else:
+        Workers = [multiprocessing.Process(target=function, args = (tasks, results, edit_distance)) for i in xrange(n_procs)]
     for each in Workers:
         each.start()
     for each in xrange(n_procs):
         tasks.put('STOP')
     for process in Workers:
         process.join()
-    for r in xrange(len(re_chunk)):
+    for r in xrange(len(chunks)):
         myResults.append(results.get())
     tasks.close()
     results.close()
@@ -271,17 +264,23 @@ def main():
             good_tags += ((tag_name, tag_seq),)
             count += 1
     chunks, tags = chunker(good_tags)
-    print '[1] There are {0} chunks'.format(len(chunks))
-    print '[2] Calculating the Levenshtein distance across the chunks... (Slow)'
+    print '[3] There are {0} tags remaining after filtering.'.format(len(chunks))
+    print '[4] Calculating the Levenshtein distance across the tags... (Slow)'
+    if options.multiprocessing:
+        print '\t[M] Using multiprocessing...'
+    re_chunk = []
+    # split tags up into groups of 500 each
+    for i in xrange(0,len(chunks),500):
+        group_chunk = chunks[i:i+500]
+        re_chunk.append(group_chunk)
     if options.clev:
         print '\t[C] Using the C version of Levenshtein...'
         #distance_pairs = getDistanceC(good_tags, distances = True)
-        results = q_runner(6, single_worker, chunks, options.ed, tag_length = options.tl)
+        results = q_runner(4, worker, re_chunk, options.ed, tag_length = options.tl)
         # need to rebuild the arrays from the component parts
         # first, ensure the filenames are sorted according to their input order
         results = sorted(results, key=itemgetter(0))
         distances = None
-        print results
         for filename in results:
             temp_array = cPickle.load(open(filename[1]))
             if distances == None:
@@ -290,20 +289,29 @@ def main():
                 distances = numpy.vstack((distances, temp_array))
             os.remove(filename[1])
         #pdb.set_trace()
-        #distances, tags = single_worker(chunks, options.ed, options.tl)
+        #distances, tags = worker(chunks, options.ed, options.tl)
     # find those tags with the comparisons >= options.ed
-    print '[4] Finding the set of tags with the most matches at edit_distance >= {0}'.format(options.ed)
+    print '\n[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(options.ed)
     most_indices = numpy.nonzero(distances[:,options.ed] >= max(distances[:,options.ed]))[0]
     most_chunked = ()
     for tag in tags[most_indices]:
         most_chunked += ((tag, good_tags),)
-    all_keepers = single_worker2(most_chunked, options.ed)
+    #all_keepers = worker2(most_chunked, options.ed)
+    if options.multiprocessing:
+        all_keepers = q_runner(4, worker2, most_chunked, options.ed)
+    else:
+        all_keepers = single_worker2(most_chunked, options.ed)
+    #pdb.set_trace()
     max_length = 0
-    for keeper in all_keepers:
+    for filename in all_keepers:
+        #pdb.set_trace()
+        keeper = cPickle.load(open(filename))[0]
         if len(keeper) > max_length:
             largest = keeper
         else:
             pass
+        os.remove(filename)
+    print '\n'
     for k,v in enumerate(largest):
         print "Tag{0} = {1}".format(k,v)
 
