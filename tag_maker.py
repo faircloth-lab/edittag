@@ -21,8 +21,8 @@ import operator
 import tempfile
 import cPickle
 from operator import itemgetter
-# tested re2 DFA module in place of re2 here, but no substantial performance
-# gains for simple regex
+# tested re2 DFA module in place of re2 here, but there were no substantial 
+# performance gains for simple regex
 import re
 
 
@@ -57,6 +57,8 @@ help='Remove tags that are perfect self-complements')
     p.add_option('--use-c', dest = 'clev', action='store_true', default=False, 
 help='Use the C version of Levenshtein (faster)')
 
+    p.add_option('--min-and-greater', dest = 'greater', action='store_true', default=False, 
+help='Show tags at all integer values of edit distance > that specified')
 
     (options,arg) = p.parse_args()
     if not options.tl:
@@ -133,7 +135,7 @@ def get_reduced_distances(chunk, edit_distance):
     # and filtering the pairwise comparisons above
     good_comparisons = [c for c in chunk[1] if \
         Levenshtein.distance(chunk[0],c[1]) >= edit_distance]
-    # we know that the first tag is good (it is the basis for comparison), 
+    # we know that the first tag is good (it is the basis for comparison),
     # so keep that one
     keepers = [chunk[0]]
     # now, loop over all the tags in the reduced set, checking each against
@@ -170,7 +172,7 @@ def single_worker2(chunks, edit_distance):
     """this function sets up the single processing version of the 
     get_reduced_distances function"""
     results = []
-    sys.stdout.write("\tThere are {0} chunks. Processing: ".format(len(chunks), len(chunks[0][1])))
+    sys.stdout.write("\tThere are {0} chunks.\n\tProcessing: ".format(len(chunks), len(chunks[0][1])))
     for chunk in chunks:
         sys.stdout.write(".")
         sys.stdout.flush()
@@ -184,7 +186,7 @@ def q_runner(n_procs, function, chunks, **kwargs):
     myResults = []
     tasks     = multiprocessing.JoinableQueue()
     results   = multiprocessing.Queue()
-    sys.stdout.write("\t[Info] There are {0} chunks. \nProcessing: ".format(len(chunks)))
+    sys.stdout.write("\t[Info] There are {0} chunks.\n\tProcessing: ".format(len(chunks)))
     #sys.stdout.write("Processing: ")
     sys.stdout.flush()
     for k,v in enumerate(chunks):
@@ -275,6 +277,7 @@ def filter_tags_worker(tasks, results, regex, options):
         count = 0
         sys.stdout.write(".")
         sys.stdout.flush()
+        print '\n'
         tf = filter_tags(count, batch, regex, options)
         results.put(tf)
     return
@@ -302,21 +305,26 @@ def batches(tags, size):
 
 def main():
     print "\n"
-    print "################################################################"
-    print "#  Tag Generator  - generate edit-distance sequence tags       #"
-    print "#                                                              #"
-    print "#  BSD License                                                 #"
-    print "#  Brant C. Faircloth (c) 2010                                 #"
-    print "################################################################"
+    print "##############################################################################"
+    print "#  make_edit_distance_tags.py  - generate sequence tags of arbitrary length  #"
+    print "#                                                                            #"
+    print "#  Copyright (c) 2009-2010 Brant C. Faircloth                                #"
+    print "#  621 Charles E. Young Drive                                                #"
+    print "#  University of California, Los Angeles, 90095, USA                         #"
+    print "##############################################################################"
     print "\n"
     good_tags = ()
     good_tags_dict = {}
     options, args = interface()
-    print '[1] Generating all combinations of tags (slow when tag length ≥ 9 nt)...'
+    print '[1] Generating all combinations of tags'
+    if options.tl >= 9:
+        print '\t[Warn] Slow when tag length > 8'
     all_tags = itertools.product('ACGT', repeat = options.tl)
     if options.polybase:
         regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
-    print '[2] If selected, removing tags based on filter criteria (slow when tag length ≥ 9 nt)...'
+    print '[2] If selected, removing tags based on filter criteria'
+    if options.tl >= 9:
+        print '\t[Warn] Slow when tag length > 8'
     if options.multiprocessing and options.tl >= 9:
         tag_batches = batches(all_tags, 25000)
         good_tag_files = q_runner(options.nprocs, filter_tags_worker, tag_batches, regex = regex, options = options)
@@ -330,8 +338,8 @@ def main():
         os.remove(filename)
     #pdb.set_trace()
     chunks, tags = chunker(good_tags)
-    print '\n[3] There are {0} tags remaining after filtering.'.format(len(chunks))
-    print '[4] Calculating the Levenshtein distance across the tags... (Slow)'
+    print '[3] There are {0} tags remaining after filtering'.format(len(chunks))
+    print '[4] Calculating the Levenshtein distance across the tags'
     if options.multiprocessing:
         print '\t[Info] Using multiprocessing...'
     re_chunk = []
@@ -357,29 +365,36 @@ def main():
         #pdb.set_trace()
         #distances, tags = worker(chunks, options.ed, options.tl)
     # find those tags with the comparisons >= options.ed
-    print '\n[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(options.ed)
-    most_indices = numpy.nonzero(distances[:,options.ed] >= max(distances[:,options.ed]))[0]
-    most_chunked = ()
-    for tag in tags[most_indices]:
-        most_chunked += ((tag, good_tags),)
-    #all_keepers = worker2(most_chunked, options.ed)
-    if options.multiprocessing:
-        all_keepers = q_runner(options.nprocs, worker2, most_chunked, edit_distance = options.ed)
+    if options.greater:
+        all_distances = xrange(options.ed,options.tl)
     else:
-        all_keepers = single_worker2(most_chunked, options.ed)
-    #pdb.set_trace()
-    max_length = 0
-    for filename in all_keepers:
-        #pdb.set_trace()
-        keeper = cPickle.load(open(filename))
-        if len(keeper) > max_length:
-            largest = keeper
+        all_distances = [options.ed]
+    for ed in all_distances:
+        print '\n[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(ed)
+        most_indices = numpy.nonzero(distances[:,ed] >= max(distances[:,ed]))[0]
+        most_chunked = ()
+        for tag in tags[most_indices]:
+            most_chunked += ((tag, good_tags),)
+        #all_keepers = worker2(most_chunked, ed)
+        if options.multiprocessing:
+            all_keepers = q_runner(options.nprocs, worker2, most_chunked, edit_distance = ed)
         else:
-            pass
-        os.remove(filename)
-    print '\n'
-    for k,v in enumerate(largest):
-        print "Tag{0} = {1}".format(k,v)
+            all_keepers = single_worker2(most_chunked, ed)
+        #pdb.set_trace()
+        max_length = 0
+        for filename in all_keepers:
+            #pdb.set_trace()
+            keeper = cPickle.load(open(filename))
+            if len(keeper) > max_length:
+                largest = keeper
+            else:
+                pass
+            os.remove(filename)
+        print '\n\n\tMinimum edit distance {0} tags'.format(ed)
+        print '\t*****************************'
+        for k,v in enumerate(largest):
+            print "\tTag{0} = {1}".format(k,v)
+        print '\n'
 
 if __name__ == '__main__':
     main()
