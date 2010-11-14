@@ -6,6 +6,10 @@ tag_maker.py
 
 Created by Brant Faircloth on 28 May 2010 23:27 PDT (-0700).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+
+USAGE:   python tag_maker.py --tag-length=8 --edit-distance=3 \
+	 	--no-polybase --gc --comp --use-c --multiprocessing \
+		--min-and-greater | tee 8_nt.txt
 """
 
 import pdb
