@@ -70,13 +70,16 @@ help='Show tags at all integer values of edit distance > that specified')
         sys.exit(2)
     return options, arg
 
-def pickler(stuff_to_dump):
+def pickler(stuff_to_dump, count = None):
     """ multiprocessing.Queue() doesn't dig having a lot of shit shoved through
     it (in terms of data volume).  So, although our remaining data sets are
     usually small, pickle them, store them in a temp file, and we'll
     get to them after the multiprocessing run.
     """
-    fd, tf = tempfile.mkstemp(suffix='.temptext')
+    if count:
+        fd, tf = tempfile.mkstemp(suffix='.{0}.temptext'.format(count))
+    else:
+        fd, tf = tempfile.mkstemp(suffix='.temptext')
     os.close(fd)
     dump_file = open(tf, 'w')
     cPickle.dump(stuff_to_dump, dump_file)
@@ -117,7 +120,7 @@ def worker(tasks, results, edit_distance, tag_length):
             for i in sorted(distance_per_chunk_counts.keys()):
                 distance_array[k][i] = distance_per_chunk_counts[i]
         # see docstring for pickler
-        tf = pickler(distance_array)
+        tf = pickler(distance_array, position)
         results.put((position, tf))
         tasks.task_done()
     return
@@ -210,10 +213,10 @@ def q_runner(n_procs, function, chunks, **kwargs):
         each.start()
     for each in xrange(n_procs):
         tasks.put('STOP')
-    for process in Workers:
-        process.join()
     for r in xrange(len(chunks)):
         myResults.append(results.get())
+    #for process in Workers:
+    #    process.join()
     tasks.close()
     results.close()
     return myResults
@@ -357,6 +360,7 @@ def main():
         results = q_runner(options.nprocs, worker, re_chunk, edit_distance = options.ed, tag_length = options.tl)
         # need to rebuild the arrays from the component parts
         # first, ensure the filenames are sorted according to their input order
+    if options.clev:
         results = sorted(results, key=itemgetter(0))
         distances = None
         for filename in results:
@@ -365,7 +369,7 @@ def main():
                 distances = temp_array
             else:
                 distances = numpy.vstack((distances, temp_array))
-            os.remove(filename[1])
+            #os.remove(filename[1])
         #pdb.set_trace()
         #distances, tags = worker(chunks, options.ed, options.tl)
     # find those tags with the comparisons >= options.ed
