@@ -41,7 +41,7 @@ help='Print iteration')
     (options,arg) = p.parse_args()
     return options, arg 
 
-def sequence_generator(i, count, read, barcode, error_rate):
+def sequence_generator(j, count=500000, read=250, barcode=8, error_rate=0.01):
     error_dict = defaultdict(int)
     for i in xrange(count):
         #pdb.set_trace()
@@ -53,7 +53,7 @@ def sequence_generator(i, count, read, barcode, error_rate):
 def main():
     options, args = interface()
     pool = multiprocessing.Pool(7)
-    pool.map(sequence_generator, range(10), options.count, options.read, options.barcode, options.error) 
+    pool.map(sequence_generator, range(10)) 
 
 if __name__ == '__main__':
     main()
