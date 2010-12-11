@@ -26,6 +26,8 @@ metavar='FILE')
     p.add_option('--output', dest = 'output', action='store', 
 type='string', default = None, help='The path to the output file.', 
 metavar='FILE')
+    p.add_option('--tabs', dest = 'tabs', action='store_true', default=False, 
+help='Tab delimited input')
 
     (options,arg) = p.parse_args()
     options.input = os.path.abspath(os.path.expanduser(options.input))
@@ -47,7 +49,10 @@ def main():
     header = f.next()
     data = []
     for line in f:
-        name, tag = line.strip().split(',')
+        if options.tabs:
+            name, tag = line.strip().split('\t')
+        else:
+            name, tag = line.strip().split(',')
         flows = []
         for base in tag:
             for count, flow in enumerate(['T', 'A', 'C', 'G']):
