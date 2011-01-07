@@ -64,6 +64,13 @@ help='Use the C version of Levenshtein (faster)')
     p.add_option('--min-and-greater', dest = 'greater', action='store_true', default=False, 
 help='Show tags at all integer values of edit distance > that specified')
 
+    p.add_option('--rescan', dest = 'rescan', action='store', type='string', 
+default = None, help='Rescan a file')
+
+    p.add_option('--rescan-length', dest = 'rescan_length', action='store', type='int', 
+default = 6, help='Rescan length')
+
+
     (options,arg) = p.parse_args()
     if not options.tl:
         p.print_help()
@@ -310,6 +317,13 @@ def batches(tags, size):
     output += (temp,)
     return output
 
+def tag_rescanner(file, length):
+    for line in open(file, 'rU').readlines():
+        if line and not line.startswith('#'):
+            tag_fragment = line.split('\t')[1][:length]
+            yield tuple(tag_fragment)
+            
+
 def main():
     print "\n"
     print "##############################################################################"
@@ -326,7 +340,11 @@ def main():
     print '[1] Generating all combinations of tags'
     if options.tl >= 9:
         print '\t[Warn] Slow when tag length > 8'
-    all_tags = itertools.product('ACGT', repeat = options.tl)
+    if not options.rescan:
+        all_tags = itertools.product('ACGT', repeat = options.tl)
+    else:
+        all_tags = tag_rescanner(options.rescan, options.rescan_length)
+    #pdb.set_trace()
     if options.polybase:
         regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
     print '[2] If selected, removing tags based on filter criteria'
