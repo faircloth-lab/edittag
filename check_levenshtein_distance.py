@@ -19,6 +19,7 @@ import pdb
 import operator
 import optparse
 import os
+import sys
 import ConfigParser
 try:
     import Levenshtein
@@ -47,6 +48,8 @@ def interface():
         help='Print pairs of tags with the minimum edit distances')
     p.add_option('--very-verbose', dest = 'very_verbose', action='store_true', 
         default=False, help='Print edit distances of all pairs')
+    p.add_option('--hamming', dest = 'hamming', action='store_true', 
+        default=False, help='Use Hamming distance in place of Levenshtein.')
         
     (options,arg) = p.parse_args()
     if not options.conf:
@@ -58,7 +61,7 @@ def interface():
         sys.exit(2)
     return options, arg
 
-def hamming_distance(s1, s2):
+def hamming(s1, s2):
     '''Find the Hamming distance btw. 2 strings.
     
     Substitutions only.
@@ -101,10 +104,12 @@ def get_distance(linkers, *args, **kwargs):
     for l1 in xrange(len(linkers)):
         s1 = linkers[l1]
         for s2 in linkers[l1+1:]:
-            if not kwargs['use_c']:
-                edit_distance = levenshtein(s1[1],s2[1])
-            else:
+            if kwargs['hamming']:
+                edit_distance = hamming(s1[1],s2[1])
+            elif kwargs['use_c']:
                 edit_distance = Levenshtein.distance(s1[1],s2[1])
+            else:
+                edit_distance = levenshtein(s1[1],s2[1])
             linker_dist.append((s1[0], s2[0], edit_distance))
     #pdb.set_trace()
     link_list = [i[0] for i in linkers]
@@ -177,7 +182,7 @@ def main():
         
     for g in groups:
         #pdb.set_trace()
-        ed = get_distance(groups[g], g, distances = True, use_c = options.use_c)
+        ed = get_distance(groups[g], g, distances = True, use_c = options.use_c, hamming = options.hamming)
         #pdb.set_trace()
         if len(groups[g]) > 1:
             # get minimum distance
