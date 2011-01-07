@@ -52,6 +52,7 @@ help='Print iteration')
     
     return options, arg 
 
+
 def sequence_generator():
     result = sum(numpy.random.binomial(1, options.error, options.read)[10:10 + options.barcode])
     return result
@@ -79,3 +80,20 @@ for r in result:
     outf.write("{0}\n".format(','.join(r)))
 print "\n"
 outf.close()
+
+def sequence_generator(j, count=500000, read=250, barcode=8, error_rate=0.01):
+    error_dict = defaultdict(int)
+    for i in xrange(count):
+        #pdb.set_trace()
+        read = numpy.random.binomial(1, error_rate, read)
+        errors = sum(read[10:10 + barcode])
+        error_dict[errors] += 1
+    print error_dict
+
+def main():
+    options, args = interface()
+    pool = multiprocessing.Pool(7)
+    pool.map(sequence_generator, range(10)) 
+
+if __name__ == '__main__':
+    main()

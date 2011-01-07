@@ -179,8 +179,9 @@ def get_primer3_settings():
     settings.params['PRIMER_PAIR_MAX_COMPL_ANY_TH']     = 45.   # deg C
     settings.params['PRIMER_MAX_SELF_END_TH']           = 40.   # deg C
     settings.params['PRIMER_PAIR_MAX_COMPL_END_TH']     = 40.   # deg C
-    settings.params['PRIMER_MAX_HAIRPIN']               = 24.   # deg C
-    settings.params['PRIMER_PAIR_MAX_HAIRPIN']          = 24.   # deg C
+    # there are going to be hairpins - let's try and make sure they melt
+    settings.params['PRIMER_MAX_HAIRPIN_TH']            = 40.   # deg C
+    settings.params['PRIMER_PAIR_MAX_HAIRPIN_TH']       = 40.   # deg C
     settings.params['PRIMER_MAX_END_STABILITY']         = 8.5   # delta G
     return settings
 
@@ -225,7 +226,8 @@ def main():
     cur = conn.cursor()
     create_database(cur)
     settings = get_primer3_settings()
-    p3 = primer.Primers()
+    # make sure we send it the correct version of primer3
+    p3 = primer.Primers(binary='primer3_long')
     # trick the module to think we've actually designed primers
     p3.primers_designed = True
     p3.primers = {0:
