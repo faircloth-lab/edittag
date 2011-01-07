@@ -261,6 +261,8 @@ def filter_tags(count, batch, regex, options):
             polybase = regex.search(tag_seq)
             if not polybase:
                 good = True
+        else:
+            good = True
         if good and options.gc:
             gc = (tag_seq.count('G') + tag_seq.count('C')) / float(len(tag))
             if 0.40 <= gc <= 0.60:
@@ -345,8 +347,8 @@ def main():
     else:
         all_tags = tag_rescanner(options.rescan, options.rescan_length)
     #pdb.set_trace()
-    if options.polybase:
-        regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
+    #if options.polybase:
+    regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
     print '[2] If selected, removing tags based on filter criteria'
     if options.tl >= 9:
         print '\t[Warn] Slow when tag length > 8'
