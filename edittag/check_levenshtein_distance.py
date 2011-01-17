@@ -2,210 +2,187 @@
 # encoding: utf-8
 
 """
-levenshtein.py
+check_levenshtein_distnance.py
 
-Created by Brant Faircloth on 10 September 2010 11:53 PDT (-0700).
-Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+Created by Brant Faircloth on 16 January 2011 11:53 PDT (-0700).
+Copyright (c) 2011 Brant C. Faircloth. All rights reserved.
 
 PURPOSE:  Determines the edit distances between various groups of linkers in the 
-configuration file passed on stdin.
+input file passed via CLI. Can also compute Hamming distance in place of
+Levenshtein.
 
-USAGE:  python helpers/levenshtein.py --configuration=linker-py.conf \
-        --section=MidLinkerGroups --verbose
+USAGE:  python check_levenshtein_distance.py --input=my_edit_metric_tags.txt --verbose
+
+where my_edit_metric_tags.txt looks something like the following:
+
+#name:sequence#edit_distance
+[4nt ed3]
+Tag0:GTCA#3
+Tag1:AACC#3
+Tag2:ACAG#3
+Tag3:AGGA#3
+Tag4:CCTA#3
+Tag5:CGAT#3
+Tag6:TGTG#3
 
 """
 
-import pdb
-import operator
-import optparse
 import os
-import sys
+import numpy
+import optparse
 import ConfigParser
 try:
-    import Levenshtein
+    from Levenshtein import distance
+    from Levenshtein import hamming
 except:
-    pass
+    from levenshtein import distance
+    from levenshtein import hamming
+
+import pdb
+
 
 def interface():
-    '''Command-line interface'''
+    """Command-line interface"""
     usage = "usage: %prog [options]"
 
     p = optparse.OptionParser(usage)
 
-    p.add_option('--configuration', dest = 'conf', action='store', \
+    p.add_option('--input', dest = 'input', action='store', \
         type='string', default = None, \
         help='The path to the configuration file.', \
         metavar='FILE')
     p.add_option('--section', dest = 'section', action = 'store',\
         type='string', default = None, \
-        help='The section of the config file to evaluate', metavar='FILE')    
-    p.add_option('--filter', dest = 'filter', action = 'store',\
-        type='int', default = None, \
-        help='Iteratively filter (drop) tags less than minimum distance of FILTER')
-    p.add_option('--use-c', dest = 'use_c', action='store_true', default=False, 
-        help='Use the C version of levenshtein (Levenshtein)')
+        help='[Optional] The section of the config file to evaluate')   
+    p.add_option('--minimums', dest = 'minimums', action='store_true', default=True, 
+        help='[Default] Compute and return only the minimum edit distances in the set of tags')
+    p.add_option('--all-distances', dest = 'distances', action='store_true', default=False, 
+        help='[Optional] Compute and return all pairwise distances between the membrs in a set of tags')
     p.add_option('--verbose', dest = 'verbose', action='store_true', default=False, 
-        help='Print pairs of tags with the minimum edit distances')
-    p.add_option('--very-verbose', dest = 'very_verbose', action='store_true', 
-        default=False, help='Print edit distances of all pairs')
+        help='[Optional] Print pairs of tags with the minimum edit distances')
     p.add_option('--hamming', dest = 'hamming', action='store_true', 
-        default=False, help='Use Hamming distance in place of Levenshtein.')
-        
+        default=False, help='[Optional] Use Hamming distance in place of Levenshtein distance.')
+
     (options,arg) = p.parse_args()
-    if not options.conf:
-        p.print_help()
-        sys.exit(2)
-    if not os.path.isfile(options.conf):
+    
+    if options.distances:
+        options.minimums = False
+    if not options.input or not os.path.isfile(os.path.expanduser(options.input)):
         print "You must provide a valid path to the configuration file."
         p.print_help()
         sys.exit(2)
     return options, arg
 
-def hamming(s1, s2):
-    '''Find the Hamming distance btw. 2 strings.
-    
-    Substitutions only.
-    
-    From http://en.wikipedia.org/wiki/Hamming_distance
-    
-    '''
-    assert len(s1) == len(s2)
-    return sum([ch1 != ch2 for ch1, ch2 in zip(s1, s2)])
+def levenshtein(a, b):
+    """return the levenshtein/edit distance between a and b"""
+    return distance(a,b)
 
-def levenshtein(a,b):
-    """Pure python version to compute the levenshtein distance between a and b.
-    The Levenshtein distance includes insertions, deletions, substitutions; 
-    unlike the Hamming distance, which is substitutions only.
-    
-    ORIGINALLY FROM:  http://hetland.org/coding/python/levenshtein.py
-    
-    """
-    n, m = len(a), len(b)
-    if n > m:
-        # Make sure n <= m, to use O(min(n,m)) space
-        a,b = b,a
-        n,m = m,n
-    current = range(n+1)
-    for i in range(1,m+1):
-        previous, current = current, [i]+[0]*n
-        for j in range(1,n+1):
-            add, delete = previous[j]+1, current[j-1]+1
-            change = previous[j-1]
-            if a[j-1] != b[i-1]:
-                change = change + 1
-            current[j] = min(add, delete, change)
-    return current[n]
+def hammng(a, b):
+    """return the hamming distance between a and b"""
+    return hamming(a,b)
 
-def get_distance(linkers, *args, **kwargs):
-    """given a set of tags, determine the levenshtein distance between them.
-    Flip over to C when called (and the Levenshtein module is installed)."""
-    #pdb.set_trace()
-    linker_dist = []
-    for l1 in xrange(len(linkers)):
-        s1 = linkers[l1]
-        for s2 in linkers[l1+1:]:
-            if kwargs['hamming']:
-                edit_distance = hamming(s1[1],s2[1])
-            elif kwargs['use_c']:
-                edit_distance = Levenshtein.distance(s1[1],s2[1])
+def get_tag_array(tags):
+    """return an arrray of sequence tags from the input file"""
+    return numpy.array([t[1].split('#')[0] for t in tags])
+
+def get_minimum_tags(bad, section, tags, vector_distance, verbose = False):
+    """return the minimum edit distance in the pairwise comparison of all 
+    sequence tags. if verbose, return all tags compared that are at the 
+    minimum edit distance"""
+    for key, tag in enumerate(tags):
+        if key + 1 < len(tags):
+            distances = vector_distance(tags[key+1:], tag)
+            if not bad[section]['minimum'] or min(distances) < bad[section]['minimum']:
+                bad[section]['minimum'] = min(distances)
+                # reset the bad tags
+                bad[section]['tags'] = []
+            # get any tags < minimum edit distance
+            below = numpy.where(distances == bad[section]['minimum'])[0] + (key + 1)
+            if verbose and below.any():
+                bad[section]['tags'].append((tag, tags[below]))
+    return bad
+
+def get_all_distances(bad, section, tags, vector_distance, verbose = False):
+    """compute and return the levenshtein distances between all pairwise
+    combinations of tags"""
+    bad[section]['tags'] = []
+    for key, tag in enumerate(tags):
+        if key + 1 < len(tags):
+            distances = vector_distance(tags[key+1:], tag)
+            if not verbose:
+                bad[section]['tags'].extend(distances)
             else:
-                edit_distance = levenshtein(s1[1],s2[1])
-            linker_dist.append((s1[0], s2[0], edit_distance))
-    #pdb.set_trace()
-    link_list = [i[0] for i in linkers]
-    if len(linker_dist) == 0:
-        min_dist = 'NA'
-    else:
-        min_dist = min([i[2] for i in linker_dist])
-    if kwargs and kwargs['distances']:
-        linker_sorted = sorted(linker_dist, key=operator.itemgetter(2))
-        return linker_sorted
-    else:
-        return link_list, min_dist
+                distance_dict = dict(zip(tags[key+1:], distances))
+                bad[section]['tags'].append((tag, distance_dict))
+    return bad
 
-def test():
-    assert(levenshtein('shit','shat') == 1)
-    assert(levenshtein('cool','bowl') == 2)
-    assert(levenshtein('kitten','sitting') == 3)
-    assert(levenshtein('bonjour','bougeoir') == 4)
+def get_section_results(options, bad, tags, section, vector_distance):
+    """helper function that runs comparisons on a per section basis"""
+    bad[section] = {'minimum':None}
+    if options.minimums:
+        bad = get_minimum_tags(bad, section, tags, vector_distance, options.verbose)
+    elif options.distances:
+        bad = get_all_distances(bad, section, tags, vector_distance, options.verbose)
+    return bad
 
-def filter_tags(groups, g, ed, min_dist, desired_dist, **kwargs):
-    bad_tags = set()
-    for dist in xrange(min_dist, desired_dist):
-        # create the set of tags below min_dist
-        for l_set in ed:
-        # if a comparison is at the min dist
-            if l_set[2] == dist:
-                bad_tags.add(l_set[0])
-        # remove the bad tags from the candidate set
-        print "Dropping tags of min_dist = {0}".format(dist)
-        print "\t{0}".format('\n\t'.join(bad_tags))
-        good_tags = [g for g in groups if g[0] not in bad_tags]
-        #pdb.set_trace()
-        ed = get_distance(good_tags, 1, **kwargs)
-    return good_tags
-    
-def main():
-    options, arg = interface()
-    if options.use_c:
-        try:
-            Levenshtein.distance('cat','cant')
-        except:
-            print "Cannot find Levenshtein modules... dropping back to pure Python"
-            options.use_c = False
-    conf = ConfigParser.ConfigParser()
-    conf.read(options.conf)
-    groups = {}
-    if options.section == 'MidLinkerGroups':
-        clust = conf.items('MidLinkerGroups')
-        links = dict(conf.items('Linker'))
-        for c in clust:
-            group = c[0].split(',')[0]
-            linker = c[0].split(',')[1].strip()
-            if group in groups.keys():
-                groups[group] = groups[group] + ((linker,links[linker]),)
-            else:
-                groups[group] = ((linker,links[linker]),) 
-    elif options.section == 'LinkerGroups':
-        #pdb.set_trace()
-        clust = conf.items('LinkerGroups')
-        links = dict(conf.items('Linker'))
-        g = ()
-        for c in clust:
-            g += ((c[0], links[c[0]]),)
-        groups[1] = g
-    elif options.section == 'Linker':
-        #pdb.set_trace()
-        g = conf.items('Linker')
-        groups[1] = g
-        #pdb.set_trace()
-        
-    for g in groups:
-        #pdb.set_trace()
-        ed = get_distance(groups[g], g, distances = True, use_c = options.use_c, hamming = options.hamming)
-        #pdb.set_trace()
-        if len(groups[g]) > 1:
-            # get minimum distance
-            min_dist = ed[0][2]
-            print '{0} {1}\n\n\tminimum edit distance = {2}\n\n\tlinkers with minimum edit distance:'.format(options.section, g, min_dist)
-            if options.verbose:
-                for l_set in ed:
-                    if l_set[2] == min_dist:
-                        print '\t\t{0} <=> {1}'.format(l_set[0], l_set[1])
-            if options.very_verbose:
-                print '\n\tedit distances of other linker combinations:'
-                for d in ed:
-                    print '\t\t{0} <=> {1}; edit distance = {2}'.format(d[0],d[1],d[2])
-            print '\n'
-            if options.filter:
-                remaining_tags = filter_tags(groups[g], g, ed, min_dist, options.filter, distances = True, use_c = options.use_c)
-                print "\n\nTags remaining after filtering:"
-                for tag in remaining_tags:
-                    print "\t{0} = {1}".format(tag[0], tag[1])
+def show_results(options, bad):
+    """pretty print results from our bad tag dictionary"""
+    sections = bad.keys()
+    sections.sort()
+    if options.minimums:
+        if options.verbose:
+            for sec in sections:
+                print "[{0}]\n\tMinimum edit distance of set = {1}".format(sec, bad[sec]['minimum'])
+                print "\tTag pairs at the minimum distance:"
+                for comparison in bad[sec]['tags']:
+                    for tag in comparison[1]:
+                        print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, bad[sec]['minimum'])
         else:
-            print '{0} {1}\n\n\tthere is only 1 tag in this group'.format(options.section, g)
-        print "\n"
+            for sec in sections:
+                print "[{0}]\n\tminimum edit distance = {1}".format(sec, bad[sec]['minimum'])
+    elif options.distances:
+        if options.verbose:
+            for sec in sections:
+                print "[{0}]".format(sec)
+                print "\tTag comparisons:"
+                for comparison in bad[sec]['tags']:
+                    for tag in comparison[1]:
+                         print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, comparison[1][tag])
+        else:
+            for sec in sections:
+                distances = numpy.array(bad[sec]['tags'])
+                summary = numpy.bincount(distances)
+                mode = [i for i in numpy.where(summary == max(summary))[0]]
+                print "[{0}]\n\tMinimum edit distance:\t\t{1}".format(sec, min(distances))
+                print "\tModal edit distance:\t\t{0}".format(mode)
+                print "\tMax edit distance:\t\t{0}".format(max(distances))
+                print "\n\tDistribution of edit distance comparisons:\n"
+                print "\t\t  Edit Distance  Count "
+                print "\t\t|--------------|------|"
+                for k,v in enumerate(summary):
+                    fh = ' ' * (14 - len(str(k)))
+                    bh = ' ' * (6 - len(str(v)))
+                    print "\t\t|{0}{1}|{2}{3}|".format(fh, k, bh, v)
+                print "\t\t-----------------------\n\n"
 
+def main():
+    """main loop"""
+    options, arg = interface()
+    conf = ConfigParser.ConfigParser()
+    conf.read(options.input)
+    if options.hamming:
+        vector_distance = numpy.vectorize(hammng)
+    else:
+        vector_distance = numpy.vectorize(levenshtein)
+    bad = {}
+    if not options.section:
+        for section in conf.sections():
+            tags = get_tag_array(conf.items(section))
+            bad = get_section_results(options, bad, tags, section, vector_distance)
+    elif options.section:
+        tags = get_tag_array(conf.items(section))
+        bad = get_section_results(options, bad, tags, section, vector_distance)
+    show_results(options, bad)
     
 if __name__ == '__main__':
     main()
