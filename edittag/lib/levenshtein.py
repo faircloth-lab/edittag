@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+"""
+levenshtein.py
+
+Created by Brant Faircloth on 20 November 2010 15:27 PST (-0800).
+Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+"""
+
+
 def hamming(s1, s2):
     """Find the Hamming distance btw. 2 strings. Substitutions only.
     
