@@ -319,11 +319,24 @@ def batches(tags, size):
     output += (temp,)
     return output
 
-def tag_rescanner(file, length):
+def get_rescan_generator(file, length):
     for line in open(file, 'rU').readlines():
         if line and not line.startswith('#'):
             tag_fragment = line.split('\t')[1][:length]
             yield tuple(tag_fragment)
+
+def tag_rescanner(file, length):
+    """if we need to rescan tags or parts of tags (e.g. first x bases) then 
+    this does it"""
+    rescanned_tags = {}
+    for line in open(file, 'rU').readlines():
+        if line and not line.startswith('#'):
+            tag = line.split('\t')[1].strip()
+            tag_fragment = tag[:length]
+            rescanned_tags[tag_fragment] = tag
+    g = get_rescan_generator(file, length)
+    return rescanned_tags, g
+
             
 
 def main():
@@ -345,8 +358,8 @@ def main():
     if not options.rescan:
         all_tags = itertools.product('ACGT', repeat = options.tl)
     else:
-        all_tags = tag_rescanner(options.rescan, options.rescan_length)
-    #pdb.set_trace()
+        rescanned_tags, all_tags = tag_rescanner(options.rescan, options.rescan_length)
+    pdb.set_trace()
     #if options.polybase:
     regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
     print '[2] If selected, removing tags based on filter criteria'
@@ -363,7 +376,7 @@ def main():
         temp_tags = cPickle.load(open(filename))
         good_tags.extend(temp_tags)
         os.remove(filename)
-    #pdb.set_trace()
+    pdb.set_trace()
     chunks, tags = chunker(good_tags)
     print '[3] There are {0} tags remaining after filtering'.format(len(chunks))
     print '[4] Calculating the Levenshtein distance across the tags'
@@ -421,7 +434,10 @@ def main():
         print '\n\n\tMinimum edit distance {0} tags'.format(ed)
         print '\t*****************************'
         for k,v in enumerate(largest):
-            print "\tTag{0} = {1}".format(k,v)
+            if not options.rescan:
+                print "\tTag{0} = {1}".format(k,v)
+            else:
+                print "\tTag{0} = {1}, {2}".format(k,rescanned_tags[v],v)
         print '\n'
 
 if __name__ == '__main__':
