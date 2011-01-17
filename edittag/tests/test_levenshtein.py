@@ -9,7 +9,7 @@ Copyright (c) 2011 Brant C. Faircloth. All rights reserved.
 """
 
 import unittest
-from lib.levenshtein import *
+from lib.distance.levenshtein import *
 
 import pdb
 
