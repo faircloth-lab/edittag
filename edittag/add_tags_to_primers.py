@@ -225,7 +225,7 @@ def write_results(cur, output, sort):
         o.write('{0}\n'.format(','.join([str(i) for i in row])))
     o.close()
 
-def design_and_store_primers(options, cur, section, tags, p3):
+def design_and_store_primers(options, cur, section, tags, p3, settings):
     """iterate through tags, designing primers by removing commong 
     bases, integrating tags, and adding pigtails"""
     for tag in tags:
@@ -305,10 +305,10 @@ def main():
     if not options.section:
         for section in conf.sections():
             tags = get_tag_array(conf.items(section))
-            design_and_store_primers(options, cur, section, tags, p3)
+            design_and_store_primers(options, cur, section, tags, p3, settings)
     elif options.section:
         tags = get_tag_array(conf.items(section))
-        design_and_store_primers(options, cur, section, tags, p3)
+        design_and_store_primers(options, cur, section, tags, p3, settings)
     conn.commit()
     # close the tag input file - it's not needed anymore
     #f.close()
