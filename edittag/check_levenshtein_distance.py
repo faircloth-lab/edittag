@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-check_levenshtein_distnance.py
+check_levenshtein_distance.py
 
 Created by Brant Faircloth on 16 January 2011 11:53 PDT (-0700).
 Copyright (c) 2011 Brant C. Faircloth. All rights reserved.
