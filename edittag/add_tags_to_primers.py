@@ -6,6 +6,12 @@ add_tags_to_primers.py
 
 Created by Brant Faircloth on 04 October 2010 11:02 PDT (-0700).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+
+USAGE:  python add_tags_to_primers.py \
+    --left-primer=GTTATGCATGAACGTAATGCTC --right-primer=CGCATGGTGGATTCACAATC \
+    --tag-file tags.txt --output test.csv --sort=pair_hairpin_either,pair_penalty,cycles \
+    --common --keep-database
+
 """
 
 import os

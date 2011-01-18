@@ -6,6 +6,10 @@ estimate_sequencing_error_effects.py
 
 Created by Brant Faircloth on 20 November 2010 15:27 PST (-0800).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+
+USAGE:  python estimate_sequencing_error_effects.py \
+            --read-count=1000000 --output=test.out \
+            --barcode-length=8 --iterations=1000
 """
 
 import pdb
