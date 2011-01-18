@@ -6,6 +6,11 @@ add_tags_to_adapters.py
 
 Created by Brant Faircloth on 09 November 2010 10:16 PST (-0800).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+
+USAGE:  python add_tags_to_adapters.py \
+            --5-prime CAAGCAGAAGACGGCATACGAGA --3-prime TGACTGGAGTTC \
+            --input tags.conf
+
 """
 
 import pdb
