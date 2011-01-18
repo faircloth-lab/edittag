@@ -13,8 +13,11 @@ import sys
 import pdb
 import sqlite3
 import optparse
-from p3wrapr import primer
+import ConfigParser
 from operator import itemgetter
+
+from lib.primer3 import primer
+from lib.helpers import get_tag_flows
 
 def interface():
     '''Command-line interface'''
@@ -26,38 +29,48 @@ def interface():
         type='string', default = None, help='The path to a csv file '
         + 'containing tags as a second column.',
         metavar='FILE')
+        
     p.add_option('--left-primer', dest = 'left', action='store', 
-        type='string', default = None, help='The left primer to tag.',)
+        type='string', default = None, help='The left primer to tag.')
+        
     p.add_option('--right-primer', dest = 'right', action='store', 
         type='string', default = None, help='The right primer to tag.')
+        
     p.add_option('--output', dest = 'output', action='store', 
         type='string', default = None, 
         help='The path to file for program output.',
         metavar='FILE')
+        
     p.add_option('--pigtail', dest = 'pigtail', action='store_true', 
         default=False, help='Pigtail each tagged primer sequence.')
+        
     p.add_option('--pigtail-sequence', dest = 'pigtail_seq', action='store', 
         type='string', default = 'GTTT', help='The pigtail sequence to add')
+        
     p.add_option('--sort', dest = 'sort_keys', action='store', 
             type='string', default = None, 
             help='Comma-separated list of columns on which to sort.')
+            
     p.add_option('--common', dest = 'common', action='store_true', default=False, 
             help='Remove common bases btw. pigtail and tag')
+            
     p.add_option('--keep-database', dest = 'keepdb', action='store_true', default=False, 
             help='Keeps the database')
+            
     (options,arg) = p.parse_args()
     options.input = os.path.abspath(os.path.expanduser(options.input))
     if options.output:
         options.output = os.path.abspath(os.path.expanduser(options.output))
     if not options.left and options.right:
+        print "You must provide a valid left and right primer sequence."
         p.print_help()
         sys.exit(2)
     if not os.path.isfile(options.input):
-        print "You must provide a valid path to the input and output files."
+        print "You must provide a valid path to the tag file."
         p.print_help()
         sys.exit(2)
-    if not options.output:
-        print "You must provide an output filename."
+    if not options.output and not options.keepdb:
+        print "You must output to a file (--output=something.csv) or --keep-database."
         p.print_help()
         sys.exit(2)
     return options, arg 
@@ -66,6 +79,7 @@ def create_database(cur):
     """create the database to hold our results"""
     cur.execute('''CREATE TABLE primers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        section text,
         unmodified text,
         tag text,
         cycles int,
@@ -100,6 +114,7 @@ def create_database(cur):
 def insert_primers(cur, data):
     """insert our tagged primers to the database"""
     query = ('''INSERT INTO primers (
+        section,
         unmodified,
         tag,
         cycles,
@@ -131,6 +146,7 @@ def insert_primers(cur, data):
         pair_penalty
         )
     VALUES (
+        :SECTION,
         :UNMODIFIED,
         :TAG,
         :CYCLES,
@@ -185,17 +201,7 @@ def get_primer3_settings():
     settings.params['PRIMER_MAX_END_STABILITY']         = 8.5   # delta G
     return settings
 
-def get_tag_flow_count(tag):
-    """given an input tag, return the number of reagent flows to sequence it"""
-    flows = []
-    for base in tag:
-        for count, flow in enumerate(['T', 'A', 'C', 'G']):
-            if base == flow:
-                flows.append(count+1)
-                break
-    return sum(flows)
-
-def write_output_file(cur, output, sort):
+def write_results(cur, output, sort):
     """function to create the output"""
     o = open(output, 'w')
     # get header info
@@ -212,15 +218,47 @@ def write_output_file(cur, output, sort):
     for row in rows:
         o.write('{0}\n'.format(','.join([str(i) for i in row])))
     o.close()
+
+def design_and_store_primers(options, cur, section, tags, p3):
+    """iterate through tags, designing primers by removing commong 
+    bases, integrating tags, and adding pigtails"""
+    for tag in tags:
+        # use private method from p3wrapr to get common bases btw. tag and
+        # pigtail - we're doing this because we want to add the pigtails to
+        # the tags and then just treat that whole unit as the tag, instead of
+        # adding the tag, then adding the pigtail.
+        if options.common:
+            p3.tagged_pt_common, p3.tagged_pt_tag = p3._common(options.pigtail_seq, tag[1])
+        else:
+            p3.tagged_pt_common, p3.tagged_pt_tag = options.pigtail_seq, options.pigtail_seq
+        stag = p3.tagged_pt_tag + tag[1]
+        p3.dtag(settings, seqtag=stag)
+        for k in p3.tagged_primers:
+            if p3.tagged_primers[k]:
+                p3.checked_primers[k]['SECTION'] = section
+                p3.tagged_primers[k]['CYCLES'] = get_tag_flows(tag[1])
+                p3.tagged_primers[k]['TAG'] = tag[1]
+                p3.tagged_primers[k]['UNMODIFIED'] = 0
+                p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 0
+                # sometimes there won't be any problems
+                for p in ['PRIMER_LEFT_PROBLEMS', 'PRIMER_RIGHT_PROBLEMS']:
+                    if p not in p3.tagged_primers[k].keys():
+                        p3.tagged_primers[k][p] = None
+                    elif 'Hairpin stability too high;' in p3.tagged_primers[k][p]:
+                        p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 1
+                #pdb.set_trace()
+                insert_primers(cur, p3.tagged_primers[k])
     
 def main():
     options, args = interface()
+    conf = ConfigParser.ConfigParser()
+    conf.read(options.input)
     # create a temporary table in memory for the results
     if options.keepdb:
         dir, name = os.path.split(options.output)
         name = name.split('.')[0] + '.sqlite'
         db_path = os.path.join(dir, name)
-        conn = sqlite3.connect(db_path )
+        conn = sqlite3.connect(db_path)
     else:
         conn = sqlite3.connect(':memory:')
     cur = conn.cursor()
@@ -238,6 +276,7 @@ def main():
     p3.check(settings)
     for k in p3.checked_primers:
         if p3.checked_primers[k]:
+            p3.checked_primers[k]['SECTION'] = 'None'
             p3.checked_primers[k]['CYCLES'] = 0
             p3.checked_primers[k]['TAG'] = None
             p3.checked_primers[k]['UNMODIFIED'] = 1
@@ -254,38 +293,21 @@ def main():
                     p3.checked_primers[k]['PAIR_HAIRPIN_EITHER'] = 1
             #pdb.set_trace()
             insert_primers(cur, p3.checked_primers[k])
-    f = open(options.input, 'rU')
-    tags = [line.strip().split(',') for line in f]
-    # iterate through tags, ensuring we are start with lowest flow count
-    for tag in sorted(tags, key=itemgetter(2)):
-        # use private method from p3wrapr to get common bases btw. tag and
-        # pigtail - we're doing this because we want to add the pigtails to
-        # the tags and then just treat that whole unit as the tag, instead of
-        # adding the tag, then adding the pigtail.
-        if options.common:
-            p3.tagged_pt_common, p3.tagged_pt_tag = p3._common(options.pigtail_seq, tag[1])
-        else:
-            p3.tagged_pt_common, p3.tagged_pt_tag = options.pigtail_seq, options.pigtail_seq
-        stag = p3.tagged_pt_tag + tag[1]
-        p3.dtag(settings, seqtag=stag)
-        for k in p3.tagged_primers:
-            if p3.tagged_primers[k]:
-                p3.tagged_primers[k]['CYCLES'] = get_tag_flow_count(tag[1])
-                p3.tagged_primers[k]['TAG'] = tag[1]
-                p3.tagged_primers[k]['UNMODIFIED'] = 0
-                p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 0
-                # sometimes there won't be any problems
-                for p in ['PRIMER_LEFT_PROBLEMS', 'PRIMER_RIGHT_PROBLEMS']:
-                    if p not in p3.tagged_primers[k].keys():
-                        p3.tagged_primers[k][p] = None
-                    elif 'Hairpin stability too high;' in p3.tagged_primers[k][p]:
-                        p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 1
-                #pdb.set_trace()
-                insert_primers(cur, p3.tagged_primers[k])
+    #f = open(options.input, 'rU')
+    # [[name, tag]]
+    #tags = [line.strip().split(',') for line in f]
+    if not options.section:
+        for section in conf.sections():
+            tags = get_tag_dict(conf.items(section))
+            design_and_store_primers(options, cur, section, tags, p3)
+    elif options.section:
+        tags = get_tag_array(conf.items(section))
+        design_and_store_primers(options, cur, section, tags, p3)
     conn.commit()
     # close the tag input file - it's not needed anymore
-    f.close()
-    write_output_file(cur, options.output, options.sort_keys)
+    #f.close()
+    if options.output:
+        write_results(cur, options.output, options.sort_keys)
 
 if __name__ == '__main__':
     main()
