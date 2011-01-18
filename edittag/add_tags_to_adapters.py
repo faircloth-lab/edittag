@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 """
-barcode_inserter.py
+add_tags_to_adapters.py
 
 Created by Brant Faircloth on 09 November 2010 10:16 PST (-0800).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
@@ -13,6 +13,9 @@ import os
 import sys
 import optparse
 import string
+import ConfigParser
+from lib.helpers import get_tag_array
+from lib.helpers import get_rev_comp
 
 
 def interface():
@@ -24,13 +27,20 @@ def interface():
     p.add_option('--input', dest = 'input', action='store', 
 type='string', default = None, help='The path to the input barcodes file.', 
 metavar='FILE')
-    p.add_option('--5-prime', dest = 'head', action='store', 
+    p.add_option('--5-prime', dest = 'fprime', action='store', 
 type='string', default = None, help='The sequence 5-prime of the barcode.', 
 metavar='FILE')
-    p.add_option('--3-prime', dest = 'tail', action='store', 
+    p.add_option('--3-prime', dest = 'tprime', action='store', 
 type='string', default = None, help='The sequence 3-prime of the barcode.', 
 metavar='FILE')
-
+    p.add_option('--section', dest = 'section', action = 'store',\
+type='string', default = None, help='[Optional] The section of'
++' the config file to evaluate')
+    p.add_option('--revcomp', dest = 'revcomp', action='store_true', 
+default=False, help='[Optional] Add reverse complement of tag instead'
++' of sequence.')
+    p.add_option('--suppress-orientation', dest = 'suppress', action='store_true', 
+default=False, help='[Optional] Just print adapter sequences')
 
     (options,arg) = p.parse_args()
     if not options.input:
@@ -42,26 +52,40 @@ metavar='FILE')
         sys.exit(2)
     return options, arg 
 
-def rev_comp(seq):
-   '''Return reverse complement of seq'''
-   bases = string.maketrans('AGCTagct','TCGAtcga')
-   # translate it, reverse, return
-   return seq.translate(bases)[::-1]
+def add_tags_to_adapters(adapters, section, fprime, tprime, tags, revcomp=False):
+    """insert the sequence tags between the fprime and tprime adapter sequences
+    and return a dictionary indexed by seq"""
+    for tag in tags:
+        if not revcomp:
+            adapter = fprime + tag + tprime
+        else:
+            adapter = fprime + get_rev_comp(tag) + tprime
+        adapters.setdefault(section, []).append(adapter)
+    return adapters
+
+def show_results(adapters, suppress):
+    """pretty print the adapter + index sequences"""
+    for sec in adapters:
+        print "[{0}]".format(sec)
+        for adap in adapters[sec]:
+            if not suppress:
+                print "\t5' - {0} - 3'".format(adap)
+            else:
+                print "\t{0}".format(adap)
 
 def main():
     options, args = interface()
-    for line in open(options.input, 'rU'):
-        if not line.startswith('#'):
-            if '\t' in line:
-                barcode, name = line.strip('\n').split('\t')
-            elif '=' in line:
-                pieces = line.strip().split('=')
-                pieces = [i.strip(' ') for i in pieces]
-                name, barcode = pieces
-            else:
-                name, barcode = line.strip('\n').split(' ')
-            primer = options.head + rev_comp(barcode).lower() + options.tail
-            print 'Index Primer {0}: 5\' - {1} ===>'.format(name, primer)
+    conf = ConfigParser.ConfigParser()
+    conf.read(options.input)
+    adapters = {}
+    if not options.section:
+        for section in conf.sections():
+            tags = get_tag_array(conf.items(section))
+            adapters = add_tags_to_adapters(adapters, section, options.fprime, options.tprime, tags, options.revcomp)
+    elif options.section:
+        tags = get_tag_array(conf.items(section))
+        adapters = add_tags_to_adapters(adapters, section, options.fprime, options.tprime, tags, options.revcomp)
+    show_results(adapters, options.suppress)
 
 
 if __name__ == '__main__':
