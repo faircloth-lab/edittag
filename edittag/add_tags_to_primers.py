@@ -18,6 +18,7 @@ from operator import itemgetter
 
 from lib.primer3 import primer
 from lib.helpers import get_tag_flows
+from lib.helpers import get_tag_array
 
 
 def interface():
