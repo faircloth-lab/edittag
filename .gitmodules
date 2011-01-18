@@ -1,0 +1,3 @@
+[submodule "edittag/lib/primer3"]
+	path = edittag/lib/primer3
+	url = git@github.com:brantfaircloth/p3wrapr.git
