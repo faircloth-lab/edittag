@@ -20,7 +20,6 @@ import itertools
 import optparse
 import numpy
 import multiprocessing
-import Levenshtein
 import operator
 import tempfile
 import cPickle
@@ -28,6 +27,12 @@ from operator import itemgetter
 # tested re2 DFA module in place of re2 here, but there were no substantial 
 # performance gains for simple regex
 import re
+try:
+    from Levenshtein import distance
+    from Levenshtein import hamming
+except:
+    from lib.levenshtein import distance
+    from lib.levenshtein import hamming
 
 
 def interface():
