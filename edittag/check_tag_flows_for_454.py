@@ -2,10 +2,13 @@
 # encoding: utf-8
 
 """
-
+get_tag_flows_for_454.py
 
 Created by Brant Faircloth on 04 October 2010 11:02 PDT (-0700).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
+
+USAGE:  python tag_flows_for_454.py --input tags.txt
+
 """
 
 import os
