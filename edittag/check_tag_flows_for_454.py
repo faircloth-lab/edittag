@@ -12,7 +12,10 @@ import os
 import sys
 import pdb
 import optparse
+import ConfigParser
 from operator import itemgetter
+from lib.helpers import get_tag_flows
+from lib.helpers import get_tag_dict
 
 def interface():
     '''Command-line interface'''
@@ -23,16 +26,14 @@ def interface():
     p.add_option('--input', dest = 'input', action='store', 
 type='string', default = None, help='The path to the input file.', 
 metavar='FILE')
-    p.add_option('--output', dest = 'output', action='store', 
-type='string', default = None, help='The path to the output file.', 
-metavar='FILE')
-    p.add_option('--tabs', dest = 'tabs', action='store_true', default=False, 
-help='Tab delimited input')
+    p.add_option('--section', dest = 'section', action = 'store',\
+type='string', default = None, help='[Optional] The section of'
++' the config file to evaluate')
 
     (options,arg) = p.parse_args()
     options.input = os.path.abspath(os.path.expanduser(options.input))
-    if options.output:
-        options.output = os.path.abspath(os.path.expanduser(options.output))
+    #if options.output:
+    #    options.output = os.path.abspath(os.path.expanduser(options.output))
     if not options.input:
         p.print_help()
         sys.exit(2)
@@ -40,36 +41,32 @@ help='Tab delimited input')
         print "You must provide a valid path to the configuration file."
         p.print_help()
         sys.exit(2)
-    return options, arg 
+    return options, arg
 
+def get_section_flows(section, flows, tags):
+    for name in tags:
+        flows.setdefault(section, []).append([name, tags[name], get_tag_flows(tags[name])])
+    return flows
+
+def show_results(flows):
+    for sec in flows:
+        print "{0}".format(sec)
+        for item in sorted(flows[sec], key=itemgetter(2)):
+            print "\t{0}\t{1}\t{2}".format(item[0], item[1], item[2])
 
 def main():
     options, args = interface()
-    f = open(options.input, 'rU')
-    header = f.next()
-    data = []
-    for line in f:
-        if options.tabs:
-            name, tag = line.strip().split('\t')
-        else:
-            name, tag = line.strip().split(',')
-        flows = []
-        for base in tag:
-            for count, flow in enumerate(['T', 'A', 'C', 'G']):
-                if base == flow:
-                    flows.append(count+1)
-                    break
-        data.append([name, tag, sum(flows)])
-    if options.output:
-        o = open(options.output, 'w')
-    # sort all the tags by the number of flows required
-    for tag in sorted(data, key=itemgetter(2)):
-        # there's an integer in the list, so we have to stringify it
-        result = ','.join(['{0}'.format(i) for i in tag])
-        if not options.output:
-            print result
-        else:
-            o.write('{0}\n'.format(result))
+    conf = ConfigParser.ConfigParser()
+    conf.read(options.input)
+    flows = {}
+    if not options.section:
+        for section in conf.sections():
+            tags = get_tag_dict(conf.items(section))
+            flows = get_section_flows(section, flows, tags)
+    elif options.section:
+        tags = get_tag_array(conf.items(section))
+        flows = get_section_flows(section, flows, tags)
+    show_results(flows)
     
 if __name__ == '__main__':
     main()
