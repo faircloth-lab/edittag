@@ -35,8 +35,8 @@ try:
     from Levenshtein import distance
     from Levenshtein import hamming
 except:
-    from levenshtein import distance
-    from levenshtein import hamming
+    from lib.levenshtein import distance
+    from lib.levenshtein import hamming
 
 import pdb
 
