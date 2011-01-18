@@ -241,7 +241,7 @@ def design_and_store_primers(options, cur, section, tags, p3, settings):
         p3.dtag(settings, seqtag=stag)
         for k in p3.tagged_primers:
             if p3.tagged_primers[k]:
-                p3.checked_primers[k]['SECTION'] = section
+                p3.tagged_primers[k]['SECTION'] = section
                 p3.tagged_primers[k]['CYCLES'] = get_tag_flows(tag[1])
                 p3.tagged_primers[k]['TAG'] = tag[1]
                 p3.tagged_primers[k]['UNMODIFIED'] = 0
