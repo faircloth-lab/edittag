@@ -13,7 +13,7 @@ Levenshtein.
 
 USAGE:  python check_levenshtein_distance.py --input=my_edit_metric_tags.txt --verbose
 
-where my_edit_metric_tags.txt looks something like any of the following three:
+INPUT: my_edit_metric_tags.txt looks something like any of the following three:
 
 #name:sequence#edit_distance
 [4nt ed3]
