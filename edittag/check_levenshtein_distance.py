@@ -13,7 +13,7 @@ Levenshtein.
 
 USAGE:  python check_levenshtein_distance.py --input=my_edit_metric_tags.txt --verbose
 
-where my_edit_metric_tags.txt looks something like the following:
+where my_edit_metric_tags.txt looks something like any of the following three:
 
 #name:sequence#edit_distance
 [4nt ed3]
@@ -25,12 +25,34 @@ Tag4:CCTA#3
 Tag5:CGAT#3
 Tag6:TGTG#3
 
+#name:sequence
+[4nt ed3]
+Tag0:GTCA
+Tag1:AACC
+Tag2:ACAG
+Tag3:AGGA
+Tag4:CCTA
+Tag5:CGAT
+Tag6:TGTG
+
+#name = sequence
+[4nt ed3]
+Tag0 = GTCA
+Tag1 = AACC
+Tag2 = ACAG
+Tag3 = AGGA
+Tag4 = CCTA
+Tag5 = CGAT
+Tag6 = TGTG
+
 """
 
 import os
 import numpy
 import optparse
 import ConfigParser
+
+from lib.helpers import get_tag_array
 try:
     from Levenshtein import distance
     from Levenshtein import hamming
@@ -80,10 +102,6 @@ def levenshtein(a, b):
 def hammng(a, b):
     """return the hamming distance between a and b"""
     return hamming(a,b)
-
-def get_tag_array(tags):
-    """return an arrray of sequence tags from the input file"""
-    return numpy.array([t[1].split('#')[0] for t in tags])
 
 def get_minimum_tags(bad, section, tags, vector_distance, verbose = False):
     """return the minimum edit distance in the pairwise comparison of all 
