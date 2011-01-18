@@ -19,6 +19,7 @@ from operator import itemgetter
 from lib.primer3 import primer
 from lib.helpers import get_tag_flows
 
+
 def interface():
     '''Command-line interface'''
     usage = "usage: %prog [options]"
@@ -57,6 +58,10 @@ def interface():
     p.add_option('--keep-database', dest = 'keepdb', action='store_true', default=False, 
             help='Keeps the database')
             
+    p.add_option('--section', dest = 'section', action = 'store',
+        type='string', default = None, help='[Optional] The section of'
+	+' the config file to evaluate')
+
     (options,arg) = p.parse_args()
     options.input = os.path.abspath(os.path.expanduser(options.input))
     if options.output:
@@ -298,7 +303,7 @@ def main():
     #tags = [line.strip().split(',') for line in f]
     if not options.section:
         for section in conf.sections():
-            tags = get_tag_dict(conf.items(section))
+            tags = get_tag_array(conf.items(section))
             design_and_store_primers(options, cur, section, tags, p3)
     elif options.section:
         tags = get_tag_array(conf.items(section))
