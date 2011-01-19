@@ -3,7 +3,8 @@
 Copyright (c) 2009-2011 Brant C. Faircloth.
 All rights reserved.
 
-See `LICENSE.md` for standard, 2-clause BSD license.
+ * See `LICENSE.md` for standard, 2-clause BSD license covering computer code.    
+ * Sequence tags available from [https://github.com/BadDNA/edittag/downloads](https://github.com/BadDNA/edittag/downloads) are licensed under [Creative Commons Attribution 3.0 United States License](http://creativecommons.org/licenses/by/3.0/us/).
 
 ## Description
 
