@@ -25,10 +25,10 @@ We provide several large sets of edit metric sequence tags designed using editta
 
 ## Dependencies
 
- * Python 2.7.x (should work on 2.6.x)
- * numpy (tested with 1.5.1)
- * py-levenshtein [optional but strongly recommended]
- * primer3-mod [optional]
+ * [Python 2.7.x](http://www.python.org/) (should work on 2.6.x)
+ * [numpy](http://numpy.scipy.org) (tested with 1.5.1)
+ * [py-levenshtein](http://pylevenshtein.googlecode.com) [optional but strongly recommended]
+ * [mod-primer3](https://github.com/BadDNA/mod-primer3) [optional]
 
 ## Availability
 
