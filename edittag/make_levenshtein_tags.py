@@ -126,7 +126,7 @@ def worker(tasks, results, edit_distance, tag_length):
         for k, chunk in enumerate(chunks):
             # get the distances of a particular tag to all other tags, then 
             # group those counts into categories from 0 to max(edit_distance)
-            distance_per_chunk = [Levenshtein.distance(chunk[0],c[1]) for c in chunk[1]]
+            distance_per_chunk = [distance(chunk[0],c[1]) for c in chunk[1]]
             distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
             # stick those values in an array
             for i in sorted(distance_per_chunk_counts.keys()):
@@ -153,7 +153,7 @@ def get_reduced_distances(chunk, edit_distance):
     # edit_distance >= our minimum - we're essentially regenerating
     # and filtering the pairwise comparisons above
     good_comparisons = [c for c in chunk[1] if \
-        Levenshtein.distance(chunk[0],c[1]) >= edit_distance]
+        distance(chunk[0],c[1]) >= edit_distance]
     # we know that the first tag is good (it is the basis for comparison),
     # so keep that one
     keepers = [chunk[0]]
@@ -164,7 +164,7 @@ def get_reduced_distances(chunk, edit_distance):
         temp_dist = []
         skip = False
         for keep in keepers:
-            d = Levenshtein.distance(keep,tag[1])
+            d = distance(keep,tag[1])
             if d < edit_distance:
                 skip = True
                 # no need to continue if we're already < edit_distance
@@ -364,7 +364,6 @@ def main():
         all_tags = itertools.product('ACGT', repeat = options.tl)
     else:
         rescanned_tags, all_tags = tag_rescanner(options.rescan, options.rescan_length)
-    pdb.set_trace()
     #if options.polybase:
     regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
     print '[2] If selected, removing tags based on filter criteria'
@@ -381,7 +380,6 @@ def main():
         temp_tags = cPickle.load(open(filename))
         good_tags.extend(temp_tags)
         os.remove(filename)
-    pdb.set_trace()
     chunks, tags = chunker(good_tags)
     print '[3] There are {0} tags remaining after filtering'.format(len(chunks))
     print '[4] Calculating the Levenshtein distance across the tags'
