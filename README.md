@@ -13,9 +13,15 @@ edittag is a software collection for designing sets of edit metric sequence tags
  * edittag produces edit metric sequence tag sets conform to the edit distance selected
  * edittag used primer3 to integrate sequence tags to PCR primers
 
+We provide several large sets of edit metric sequence tags designed using edittag in the following formats:
+
+ * [text](https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt) - this file is in an appropriate format for `check_levenshtien_distance.py`
+ * [csv](https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv)
+ * [sqlite database](https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip)
+
 ## Citation
 
-Cite.
+    Cite.
 
 ## Dependencies
 
@@ -26,32 +32,32 @@ Cite.
 
 ## Availability
 
- * tar.gz
+ * tar.gz (coming soon)
  * repository
- * Amazon Machine Instance #
+ * Amazon Machine Instance # (coming soon)
 
 ## Installation
 
 ### tar.gz
 
-    1. tar -xzf package.tar.gz
-    1. python setup.py install
+    tar -xzf package.tar.gz
+    python setup.py install
 
 ### repository
 
- 1. git clone git://github.com/baddna/edittag.git edittag
- 1. chmod 0755 edittag/*.py
- 1. ensure edittag is in your path
+    git clone git://github.com/baddna/edittag.git edittag
+    chmod 0755 edittag/*.py
+    ensure edittag is in your path
 
 The steps below are only necessary if you want to use primer3 to integrate sequence tags to PCR primers:
 
- 1. cd git/edittag/edittag/lib/primer3
- 1. git submodule init && git submodule update
- 1. cd ../../../../
- 1. git clone git://github.com/baddna/mod-primer3.git
- 1. cd mod-primer3/src
- 1. make
- 1. make install
+    cd git/edittag/edittag/lib/primer3
+    git submodule init && git submodule update
+    cd ../../../../
+    git clone git://github.com/baddna/mod-primer3.git
+    cd mod-primer3/src
+    make
+    make install
  
 Ensure both `edittag` and `mod-primer3` are in your path.  Alternatively, move the binaries from mod-primer3 to a location in your path (move at least `primer3-long` and `primer3_config` into the same directory in your path).  You can then run
 
