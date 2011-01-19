@@ -34,8 +34,8 @@ Cite.
 
 ### tar.gz
 
- 1. `tar -xzf package.tar.gz`
- 1. `python setup.py install`
+    1. tar -xzf package.tar.gz
+    1. python setup.py install
 
 ### repository
 
