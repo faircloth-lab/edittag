@@ -38,7 +38,7 @@ We provide several large sets of edit metric sequence tags designed using editta
 
 ## Installation
 
-### tar.gz
+### tar.gz (not yet implemented)
 
     tar -xzf package.tar.gz
     python setup.py install
@@ -61,7 +61,7 @@ The steps below are only necessary if you want to use primer3 to integrate seque
  
 Ensure both `edittag` and `mod-primer3` are in your path.  Alternatively, move the binaries from mod-primer3 to a location in your path (move at least `primer3-long` and `primer3_config` into the same directory in your path).  You can then run
 
-### Amazon Machine Instance
+### Amazon Machine Instance (not yet implemented)
 
  1. Create an account on Amazon EC2.  
  1. Run our instance with
