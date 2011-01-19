@@ -198,8 +198,8 @@ def main():
             tags = get_tag_array(conf.items(section))
             bad = get_section_results(options, bad, tags, section, vector_distance)
     elif options.section:
-        tags = get_tag_array(conf.items(section))
-        bad = get_section_results(options, bad, tags, section, vector_distance)
+        tags = get_tag_array(conf.items(options.section))
+        bad = get_section_results(options, bad, tags, options.section, vector_distance)
     show_results(options, bad)
     
 if __name__ == '__main__':
