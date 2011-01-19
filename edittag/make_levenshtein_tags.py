@@ -40,6 +40,10 @@ def interface():
     usage = "usage: %prog [options]"
 
     p = optparse.OptionParser(usage)
+    
+    p.add_option('--output', dest = 'output', action='store', type='string', 
+default = None, help='The path to the file where you want to store the '+
+'barcodes', metavar='FILE')
 
     p.add_option('--tag-length', dest = 'tl', action='store', 
 type='int', default = 6, help='The desired tag length')
@@ -413,6 +417,8 @@ def main():
         all_distances = xrange(options.ed,options.tl)
     else:
         all_distances = [options.ed]
+    if options.output:
+        outfile = open(options.output, 'w')
     for ed in all_distances:
         print '\n[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(ed)
         most_indices = numpy.nonzero(distances[:,ed] >= max(distances[:,ed]))[0]
@@ -434,14 +440,25 @@ def main():
             else:
                 pass
             os.remove(filename)
-        print '\n\n\tMinimum edit distance {0} tags'.format(ed)
-        print '\t*****************************'
-        for k,v in enumerate(largest):
-            if not options.rescan:
-                print "\tTag{0} = {1}".format(k,v)
-            else:
-                print "\tTag{0} = {1}, {2}".format(k,rescanned_tags[v],v)
-        print '\n'
+        if not options.output:
+            print '\n\n\tMinimum edit distance {0} tags'.format(ed)
+            print '\t*****************************'
+            for k,v in enumerate(largest):
+                if not options.rescan:
+                    print "\tTag{0} = {1}".format(k,v)
+                else:
+                    print "\tTag{0} = {1}, {2}".format(k,rescanned_tags[v],v)
+            print '\n'
+        else:
+            outfile.write("[{0}nt ed{1}]\n".format(options.tl, ed))
+            for k,v in enumerate(largest):
+                if not options.rescan:
+                    outfile.write("Tag{0}:{1}\n".format(k,v))
+                else:
+                    outfile.write("\tTag{0}:{1},{2}\n".format(k,rescanned_tags[v],v))
+            print '\n'
+    if options.output:
+        outfile.close()
 
 if __name__ == '__main__':
     main()
