@@ -55,8 +55,8 @@ type='int', default = 3, help='The desired edit distance')
 action='store_true', default=False, help='Use multiprocessing')
 
     p.add_option('--processors', dest = 'nprocs', action='store', 
-type='int', default = 6, help='The number of processing cores to use when' +
-'using multiprocessing')
+type='int', default = None, help='The number of processing cores to use when' +
+' using multiprocessing.  Default is # of cores - 2')
 
     p.add_option('--no-polybase', dest = 'polybase', action='store_true', default=False, 
 help='Remove tags with > 2 identical nucleotides in a row')
@@ -67,8 +67,9 @@ help='Remove tags with GC content (%) 40 > x > 60')
     p.add_option('--comp', dest = 'comp', action='store_true', default=False, 
 help='Remove tags that are perfect self-complements')
     
-    p.add_option('--use-c', dest = 'clev', action='store_true', default=False, 
-help='Use the C version of Levenshtein (faster)')
+    # c is on by default now
+    #p.add_option('--use-c', dest = 'clev', action='store_true', default=False, 
+#help='Use the C version of Levenshtein (faster)')
 
     p.add_option('--min-and-greater', dest = 'greater', action='store_true', default=False, 
 help='Show tags at all integer values of edit distance > that specified')
@@ -79,8 +80,14 @@ default = None, help='Rescan a file')
     p.add_option('--rescan-length', dest = 'rescan_length', action='store', type='int', 
 default = 6, help='Rescan length')
 
+        
 
     (options,arg) = p.parse_args()
+    assert options.nprocs <= multiprocessing.cpu_count(), \
+        "Processors count must equal those available"
+    # set the number of processors by default
+    if options.multiprocessing and not options.nprocs:
+        options.nprocs = multiprocessing.cpu_count() - 2
     if not options.tl:
         p.print_help()
         sys.exit(2)
