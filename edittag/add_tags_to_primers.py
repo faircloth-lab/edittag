@@ -62,8 +62,8 @@ def interface():
             type='string', default = None, 
             help='Comma-separated list of columns on which to sort.')
             
-    p.add_option('--common', dest = 'common', action='store_true', default=False, 
-            help='Remove common bases btw. pigtail and tag')
+    p.add_option('--remove-common', dest = 'common', action='store_true', default=False, 
+            help='Remove common bases between the pigtail and sequence tag')
             
     p.add_option('--keep-database', dest = 'keepdb', action='store_true', default=False, 
             help='Keeps the database')
@@ -81,7 +81,7 @@ def interface():
         p.print_help()
         sys.exit(2)
     if not options.output and not options.keepdb:
-        print "You must output to a file (--output=something.csv) or --keep-database."
+        print "You must output to a file `--output=something.csv` or `--output=my_database.sqlite --keep-database`."
         p.print_help()
         sys.exit(2)
     return options, arg 
