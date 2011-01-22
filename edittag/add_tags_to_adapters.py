@@ -30,7 +30,7 @@ def interface():
     p = optparse.OptionParser(usage)
 
     p.add_option('--input', dest = 'input', action='store', 
-type='string', default = None, help='The path to the input barcodes file.', 
+type='string', default = None, help='The path to the sequence tag file.', 
 metavar='FILE')
     p.add_option('--5-prime', dest = 'fprime', action='store', 
 type='string', default = None, help='The sequence 5-prime of the barcode.', 
