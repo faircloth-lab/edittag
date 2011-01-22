@@ -265,23 +265,18 @@ def filter_tags(count, batch, regex, options):
     good_tags = ()
     for tag in batch:
         tag_seq  = ''.join(tag)
-        good = False
+        good = True
         if options.polybase:
             polybase = regex.search(tag_seq)
-            if not polybase:
-                good = True
-        else:
-            good = True
-        if good and options.gc:
-            gc = (tag_seq.count('G') + tag_seq.count('C')) / float(len(tag))
-            if 0.40 <= gc <= 0.60:
-                good = True
-            else:
+            if polybase:
                 good = False
-        if good and options.comp:
-            if tag_seq != self_comp(tag_seq):
-                good = True
-            else:
+        if options.gc:
+            gc = (tag_seq.count('G') + tag_seq.count('C')) / float(len(tag))
+            if not 0.40 <= gc <= 0.60:
+                good = False
+        if options.comp:
+            if tag_seq == self_comp(tag_seq):
+                pdb.set_trace()
                 good = False
         if good:
             tag_name = '{0}'.format(count)
