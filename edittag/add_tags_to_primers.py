@@ -33,10 +33,13 @@ def interface():
 
     p = optparse.OptionParser(usage)
 
-    p.add_option('--tag-file', dest = 'input', action='store', 
-        type='string', default = None, help='The path to a csv file '
-        + 'containing tags as a second column.',
+    p.add_option('--input', dest = 'input', action='store', 
+        type='string', default = None, help='The path to the sequence tag file.',
         metavar='FILE')
+    
+    p.add_option('--section', dest = 'section', action = 'store',
+        type='string', default = None, help='[Optional] The section of'
+        +' the config file to evaluate')
         
     p.add_option('--left-primer', dest = 'left', action='store', 
         type='string', default = None, help='The left primer to tag.')
@@ -64,10 +67,6 @@ def interface():
             
     p.add_option('--keep-database', dest = 'keepdb', action='store_true', default=False, 
             help='Keeps the database')
-            
-    p.add_option('--section', dest = 'section', action = 'store',
-        type='string', default = None, help='[Optional] The section of'
-	+' the config file to evaluate')
 
     (options,arg) = p.parse_args()
     options.input = os.path.abspath(os.path.expanduser(options.input))
