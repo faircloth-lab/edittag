@@ -43,9 +43,6 @@ type='int', default = 10, help='The read count')
     p.add_option('--iterations', dest = 'iterations', action='store', 
 type='int', default = 100, help='The read count')
 
-    p.add_option('--verbose', dest = 'verbose', action='store_true', default=False, 
-help='Print iteration')
-
     (options,arg) = p.parse_args()
     
     if not options.output:
