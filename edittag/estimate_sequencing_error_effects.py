@@ -34,9 +34,6 @@ type='float', default = 0.01, help='The error rate')
 type='string', default = None, help='The path to the output file.', 
 metavar='FILE')
 
-    p.add_option('--read-length', dest = 'read', action='store', 
-type='int', default = 250, help='The read length')
-
     p.add_option('--read-count', dest = 'count', action='store', 
 type='int', default = 500000, help='The read count')
 
@@ -54,23 +51,13 @@ help='Print iteration')
     if not options.output:
         sys.exit(2)
     
-    return options, arg 
-
-
-def sequence_generator():
-    result = sum(numpy.random.binomial(1, options.error, options.read)[10:10 + options.barcode])
-    return result
-
-def sequence_sum(iteration):
-    result = [str(iteration.count(x)) for x in xrange(options.barcode)]
-    return result
+    return options, arg
     
 def runner(_):
-    run = [sequence_generator() for seq in xrange(options.count)]
-    run_summary = sequence_sum(run)
+    counts = numpy.histogram(numpy.random.binomial(options.barcode, options.error, options.count), bins = [0,1,2,3,4,5,6,7,8,9,10])[0]
     sys.stdout.write(".")
     sys.stdout.flush()
-    return run_summary
+    return counts
 
 options, args = interface()
 pool = multiprocessing.Pool(7)
@@ -78,26 +65,10 @@ outf = open(options.output, 'w')
 sys.stdout.write("Processing")
 sys.stdout.flush()
 result = pool.map(runner, range(options.iterations))
+#pdb.set_trace()
 pool.close()
 pool.join()
 for r in result:
-    outf.write("{0}\n".format(','.join(r)))
+    outf.write("{0}\n".format(','.join(r.astype('|S20'))))
 print "\n"
 outf.close()
-
-def sequence_generator(j, count=500000, read=250, barcode=8, error_rate=0.01):
-    error_dict = defaultdict(int)
-    for i in xrange(count):
-        #pdb.set_trace()
-        read = numpy.random.binomial(1, error_rate, read)
-        errors = sum(read[10:10 + barcode])
-        error_dict[errors] += 1
-    print error_dict
-
-def main():
-    options, args = interface()
-    pool = multiprocessing.Pool(7)
-    pool.map(sequence_generator, range(10)) 
-
-if __name__ == '__main__':
-    main()
