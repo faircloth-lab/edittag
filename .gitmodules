@@ -1,6 +1,3 @@
 [submodule "edittag/lib/primer3"]
 	path = edittag/lib/primer3
 	url = git@github.com:brantfaircloth/p3wrapr.git
-[submodule "docs/_build/html"]
-	path = docs/_build/html
-	url = git@github.com:BadDNA/edittag.git
