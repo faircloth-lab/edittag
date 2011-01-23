@@ -62,9 +62,9 @@ def add_tags_to_adapters(adapters, section, fprime, tprime, tags, revcomp=False)
     and return a dictionary indexed by seq"""
     for tag in tags:
         if not revcomp:
-            adapter = fprime + tag + tprime
+            adapter = fprime + tag.lower() + tprime
         else:
-            adapter = fprime + get_rev_comp(tag) + tprime
+            adapter = fprime + get_rev_comp(tag).lower() + tprime
         adapters.setdefault(section, []).append(adapter)
     return adapters
 
@@ -88,8 +88,8 @@ def main():
             tags = get_tag_array(conf.items(section))
             adapters = add_tags_to_adapters(adapters, section, options.fprime, options.tprime, tags, options.revcomp)
     elif options.section:
-        tags = get_tag_array(conf.items(section))
-        adapters = add_tags_to_adapters(adapters, section, options.fprime, options.tprime, tags, options.revcomp)
+        tags = get_tag_array(conf.items(options.section))
+        adapters = add_tags_to_adapters(adapters, options.section, options.fprime, options.tprime, tags, options.revcomp)
     show_results(adapters, options.suppress)
 
 
