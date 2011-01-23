@@ -27,11 +27,12 @@ def interface():
     p = optparse.OptionParser(usage)
 
     p.add_option('--input', dest = 'input', action='store', 
-type='string', default = None, help='The path to the input file.', 
-metavar='FILE')
+        type='string', default = None, help='The path to the input file.', 
+        metavar='FILE')
+
     p.add_option('--section', dest = 'section', action = 'store',\
-type='string', default = None, help='[Optional] The section of'
-+' the config file to evaluate')
+        type='string', default = None, help='[Optional] The section of'
+        +' the config file to evaluate')
 
     (options,arg) = p.parse_args()
     options.input = os.path.abspath(os.path.expanduser(options.input))
@@ -47,11 +48,13 @@ type='string', default = None, help='[Optional] The section of'
     return options, arg
 
 def get_section_flows(section, flows, tags):
+    """determine the number of flows per tag in a given section of the input file"""
     for name in tags:
         flows.setdefault(section, []).append([name, tags[name], get_tag_flows(tags[name])])
     return flows
 
 def show_results(flows):
+    """pretty print the flow result to stdout"""
     for sec in flows:
         print "{0}".format(sec)
         for item in sorted(flows[sec], key=itemgetter(2)):
@@ -67,8 +70,8 @@ def main():
             tags = get_tag_dict(conf.items(section))
             flows = get_section_flows(section, flows, tags)
     elif options.section:
-        tags = get_tag_array(conf.items(section))
-        flows = get_section_flows(section, flows, tags)
+        tags = get_tag_dict(conf.items(options.section))
+        flows = get_section_flows(options.section, flows, tags)
     show_results(flows)
     
 if __name__ == '__main__':
