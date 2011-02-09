@@ -353,9 +353,9 @@ def tag_rescanner(file, length):
 def main():
     print "\n"
     print "##############################################################################"
-    print "#  make_edit_distance_tags.py  - generate sequence tags of arbitrary length  #"
+    print "#  design_edit_metric_tags.py  - generate sequence tags of arbitrary length  #"
     print "#                                                                            #"
-    print "#  Copyright (c) 2009-2010 Brant C. Faircloth                                #"
+    print "#  Copyright (c) 2009-2011 Brant C. Faircloth                                #"
     print "#  621 Charles E. Young Drive                                                #"
     print "#  University of California, Los Angeles, 90095, USA                         #"
     print "##############################################################################"
@@ -363,6 +363,10 @@ def main():
     good_tags = ()
     good_tags_dict = {}
     options, args = interface()
+    regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
+    if options.multiprocessing:
+        print "[Info] Using multiprocessing with {0} cores".format(options.nprocs)
+    # Generate tags
     print '[1] Generating all combinations of tags'
     if options.tl >= 9:
         print '\t[Warn] Slow when tag length > 8'
@@ -370,8 +374,7 @@ def main():
         all_tags = itertools.product('ACGT', repeat = options.tl)
     else:
         rescanned_tags, all_tags = tag_rescanner(options.rescan, options.rescan_length)
-    #if options.polybase:
-    regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
+    # Filter tags
     print '[2] If selected, removing tags based on filter criteria'
     if options.tl >= 9:
         print '\t[Warn] Slow when tag length > 8'
@@ -388,6 +391,7 @@ def main():
         os.remove(filename)
     chunks, tags = chunker(good_tags)
     print '[3] There are {0} tags remaining after filtering'.format(len(chunks))
+    # First pass tag distance
     print '[4] Calculating the Levenshtein distance across the tags'
     if options.multiprocessing:
         print '\t[Info] Using multiprocessing...'
@@ -396,14 +400,9 @@ def main():
         for i in xrange(0,len(chunks),500):
             group_chunk = chunks[i:i+500]
             re_chunk.append(group_chunk)
-    #if options.clev:
-    #print '\t[Info] Using the C version of Levenshtein...'
-    #distance_pairs = getDistanceC(good_tags, distances = True)
-    #if options.multiprocessing:
         results = q_runner(options.nprocs, worker, re_chunk, edit_distance = options.ed, tag_length = options.tl)
         # need to rebuild the arrays from the component parts
         # first, ensure the filenames are sorted according to their input order
-        #if options.clev:
         results = sorted(results, key=itemgetter(0))
     else:
         # mock the return from q_runner to we don't need to change below
@@ -415,28 +414,26 @@ def main():
             distances = temp_array
         else:
             distances = numpy.vstack((distances, temp_array))
-    # find those tags with the comparisons >= options.ed
+    # Find those tags with the comparisons >= options.ed
     if options.greater:
         all_distances = xrange(options.ed,options.tl)
     else:
         all_distances = [options.ed]
     if options.output:
         outfile = open(options.output, 'w')
+    # Second pass tag distances
     for ed in all_distances:
         print '\n[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(ed)
         most_indices = numpy.nonzero(distances[:,ed] >= max(distances[:,ed]))[0]
         most_chunked = ()
         for tag in tags[most_indices]:
             most_chunked += ((tag, good_tags),)
-        #all_keepers = worker2(most_chunked, ed)
         if options.multiprocessing:
             all_keepers = q_runner(options.nprocs, worker2, most_chunked, edit_distance = ed)
         else:
             all_keepers = single_worker2(most_chunked, ed)
-        #pdb.set_trace()
         max_length = 0
         for filename in all_keepers:
-            #pdb.set_trace()
             keeper = cPickle.load(open(filename))
             if len(keeper) > max_length:
                 largest = keeper
