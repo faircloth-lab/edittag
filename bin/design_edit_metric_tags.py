@@ -7,8 +7,8 @@ make_levenshtein_tags.py
 Created by Brant Faircloth on 28 May 2010 23:27 PDT (-0700).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
 
-USAGE:   python tag_maker.py --tag-length=8 --edit-distance=3 \
-            --no-polybase --gc --comp --use-c --multiprocessing \
+USAGE:   python design_edit_metric_tags.py --tag-length=8 --edit-distance=3 \
+            --no-polybase --gc --comp --multiprocessing \
             --min-and-greater | tee 8_nt.txt
 """
 
@@ -109,6 +109,21 @@ def pickler(stuff_to_dump, count = None):
     dump_file.close()
     return tf
 
+def worker_first(chunks, edit_distance, tag_length, position = 1):
+    # create an array to hold count of distances in difference classes on
+    # a per-tag basis
+    distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
+    for k, chunk in enumerate(chunks):
+        # get the distances of a particular tag to all other tags, then 
+        # group those counts into categories from 0 to max(edit_distance)
+        distance_per_chunk = [distance(chunk[0],c[1]) for c in chunk[1]]
+        distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
+        # stick those values in an array
+        for i in sorted(distance_per_chunk_counts.keys()):
+            distance_array[k][i] = distance_per_chunk_counts[i]
+    # see docstring for pickler
+    return pickler(distance_array, position)
+
 def worker(tasks, results, edit_distance, tag_length):
     """we are going to generate a summary array of edit distances from of one 
     tag against all other tags like so, where the index position is equiv. to 
@@ -131,19 +146,7 @@ def worker(tasks, results, edit_distance, tag_length):
         # pretty output
         sys.stdout.write(".")
         sys.stdout.flush()
-        # create an array to hold count of distances in difference classes on
-        # a per-tag basis
-        distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
-        for k, chunk in enumerate(chunks):
-            # get the distances of a particular tag to all other tags, then 
-            # group those counts into categories from 0 to max(edit_distance)
-            distance_per_chunk = [distance(chunk[0],c[1]) for c in chunk[1]]
-            distance_per_chunk_counts = dict([(x, distance_per_chunk.count(x)) for x in set(distance_per_chunk)])
-            # stick those values in an array
-            for i in sorted(distance_per_chunk_counts.keys()):
-                distance_array[k][i] = distance_per_chunk_counts[i]
-        # see docstring for pickler
-        tf = pickler(distance_array, position)
+        tf = worker_first(chunks, edit_distance, tag_length, position)
         results.put((position, tf))
         tasks.task_done()
     return
@@ -283,7 +286,6 @@ def filter_tags(count, batch, regex, options):
                 good = False
         if options.comp:
             if tag_seq == self_comp(tag_seq):
-                pdb.set_trace()
                 good = False
         if good:
             tag_name = '{0}'.format(count)
@@ -348,8 +350,6 @@ def tag_rescanner(file, length):
     g = get_rescan_generator(file, length)
     return rescanned_tags, g
 
-            
-
 def main():
     print "\n"
     print "##############################################################################"
@@ -391,29 +391,30 @@ def main():
     print '[4] Calculating the Levenshtein distance across the tags'
     if options.multiprocessing:
         print '\t[Info] Using multiprocessing...'
-    re_chunk = []
-    # split tags up into groups of 500 each
-    for i in xrange(0,len(chunks),500):
-        group_chunk = chunks[i:i+500]
-        re_chunk.append(group_chunk)
-    if options.clev:
-        print '\t[Info] Using the C version of Levenshtein...'
-        #distance_pairs = getDistanceC(good_tags, distances = True)
+        re_chunk = []
+        # split tags up into groups of 500 each
+        for i in xrange(0,len(chunks),500):
+            group_chunk = chunks[i:i+500]
+            re_chunk.append(group_chunk)
+    #if options.clev:
+    #print '\t[Info] Using the C version of Levenshtein...'
+    #distance_pairs = getDistanceC(good_tags, distances = True)
+    #if options.multiprocessing:
         results = q_runner(options.nprocs, worker, re_chunk, edit_distance = options.ed, tag_length = options.tl)
         # need to rebuild the arrays from the component parts
         # first, ensure the filenames are sorted according to their input order
-    if options.clev:
+        #if options.clev:
         results = sorted(results, key=itemgetter(0))
-        distances = None
-        for filename in results:
-            temp_array = cPickle.load(open(filename[1]))
-            if distances == None:
-                distances = temp_array
-            else:
-                distances = numpy.vstack((distances, temp_array))
-            #os.remove(filename[1])
-        #pdb.set_trace()
-        #distances, tags = worker(chunks, options.ed, options.tl)
+    else:
+        # mock the return from q_runner to we don't need to change below
+        results = [(1, worker_first(chunks, options.ed, options.tl),)]
+    distances = None
+    for filename in results:
+        temp_array = cPickle.load(open(filename[1]))
+        if distances == None:
+            distances = temp_array
+        else:
+            distances = numpy.vstack((distances, temp_array))
     # find those tags with the comparisons >= options.ed
     if options.greater:
         all_distances = xrange(options.ed,options.tl)
