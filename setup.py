@@ -23,10 +23,10 @@ if __name__ == '__main__':
                 'edittag.primer3'
                 ],
         scripts=['bin/add_tags_to_adapters.py',
-                'add_tags_to_primers.py',
-                'design_edit_metric_tags.py',
-                'estimate_sequencing_error_effects.py',
-                'get_tag_flows_for_454.py',
-                'validate_edit_metric_tags.py'
+                'bin/add_tags_to_primers.py',
+                'bin/design_edit_metric_tags.py',
+                'bin/estimate_sequencing_error_effects.py',
+                'bin/get_tag_flows_for_454.py',
+                'bin/validate_edit_metric_tags.py'
                 ]
         )
