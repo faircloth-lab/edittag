@@ -109,7 +109,7 @@ def pickler(stuff_to_dump, count = None):
     dump_file.close()
     return tf
 
-def worker_first(chunks, edit_distance, tag_length, position = 1):
+def first_pass_tag_distance(chunks, edit_distance, tag_length, position = 1):
     # create an array to hold count of distances in difference classes on
     # a per-tag basis
     distance_array = numpy.zeros((len(chunks), tag_length+1), dtype=numpy.dtype('uint8'))
@@ -124,7 +124,7 @@ def worker_first(chunks, edit_distance, tag_length, position = 1):
     # see docstring for pickler
     return pickler(distance_array, position)
 
-def worker(tasks, results, edit_distance, tag_length):
+def first_pass_tag_distance_worker(tasks, results, edit_distance, tag_length):
     """we are going to generate a summary array of edit distances from of one 
     tag against all other tags like so, where the index position is equiv. to 
     the edit distance:
@@ -146,7 +146,7 @@ def worker(tasks, results, edit_distance, tag_length):
         # pretty output
         sys.stdout.write(".")
         sys.stdout.flush()
-        tf = worker_first(chunks, edit_distance, tag_length, position)
+        tf = first_pass_tag_distance(chunks, edit_distance, tag_length, position)
         results.put((position, tf))
         tasks.task_done()
     return
@@ -189,7 +189,7 @@ def get_reduced_distances(chunk, edit_distance):
     tf = pickler(keepers)
     return tf
 
-def worker2(tasks, results, edit_distance):
+def second_pass_tag_distance_worker(tasks, results, edit_distance):
     """this worker tasks sets up multiprocessing for the get_reduced_distances
     function"""
     for position, chunk in iter(tasks.get, 'STOP'):
@@ -213,7 +213,7 @@ def single_worker2(chunks, edit_distance):
         results.append(tf)
     return results
 
-def q_runner(n_procs, function, chunks, **kwargs):
+def multiprocessing_queue(n_procs, function, chunks, **kwargs):
     """a generic function that i use to start worker processes with all the
     appropriate bits and stuff"""
     myResults = []
@@ -293,13 +293,6 @@ def filter_tags(count, batch, regex, options):
             count += 1
     return pickler(good_tags)
 
-def filter_tags_single_proc(batch, regex, options):
-    """The single processing version of the tag filtereding code.  Here, I've
-    maintained the use of a temporary pickle file just to keep things similar
-    through the main loop (there are already enough decisions)"""
-    count = 0
-    return [filter_tags(count, batch, regex, options)]
-
 def filter_tags_worker(tasks, results, regex, options):
     """The multiprocessing version of the tag filtering code."""
     for position, batch in iter(tasks.get, 'STOP'):
@@ -311,7 +304,7 @@ def filter_tags_worker(tasks, results, regex, options):
         results.put(tf)
     return
 
-def batches(tags, size):
+def make_tag_batches(tags, size):
     """Batch up our tags for filtering using multiprocessing.  Tried to do this
     using generators, but ran into problems with pickling to pass the objects
     off to multiprocessing.  This is a costly operation, so it should likely
@@ -350,6 +343,28 @@ def tag_rescanner(file, length):
     g = get_rescan_generator(file, length)
     return rescanned_tags, g
 
+def results_to_stdout(ed, largest, options, rescanned_tags):
+    """pretty print our results to stdout"""
+    print '\n\n\tMinimum edit distance {0} tags'.format(ed)
+    print '\t*****************************'
+    for k,v in enumerate(largest):
+        if not options.rescan:
+            print "\tTag{0} = {1}".format(k,v)
+        else:
+            print "\tTag{0} = {1}, {2}".format(k,rescanned_tags[v],v)
+    print '\n'
+
+def results_to_outfile(ed, largest, options, rescanned_tags, outfile):
+    """write our results to an outfile in formats accepted by our 
+    other programs"""
+    outfile.write("[{0}nt ed{1}]\n".format(options.tl, ed))
+    for k,v in enumerate(largest):
+        if not options.rescan:
+            outfile.write("Tag{0}:{1}\n".format(k,v))
+        else:
+            outfile.write("\tTag{0}:{1},{2}\n".format(k,rescanned_tags[v],v))
+    print '\n'
+
 def main():
     print "\n"
     print "##############################################################################"
@@ -366,47 +381,61 @@ def main():
     regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
     if options.multiprocessing:
         print "[Info] Using multiprocessing with {0} cores".format(options.nprocs)
+    
     # Generate tags
     print '[1] Generating all combinations of tags'
     if options.tl >= 9:
         print '\t[Warn] Slow when tag length > 8'
     if not options.rescan:
         all_tags = itertools.product('ACGT', repeat = options.tl)
+        rescanned_tags = None
     else:
         rescanned_tags, all_tags = tag_rescanner(options.rescan, options.rescan_length)
+    
     # Filter tags
     print '[2] If selected, removing tags based on filter criteria'
     if options.tl >= 9:
         print '\t[Warn] Slow when tag length > 8'
     if options.multiprocessing and options.tl >= 9:
-        tag_batches = batches(all_tags, 25000)
-        good_tag_files = q_runner(options.nprocs, filter_tags_worker, tag_batches, regex = regex, options = options)
+        tag_batches = make_tag_batches(all_tags, 25000)
+        filtered_tag_files = multiprocessing_queue(
+                            options.nprocs, 
+                            filter_tags_worker, 
+                            tag_batches, 
+                            regex = regex, 
+                            options = options
+                            )
     else:
-        good_tag_files = filter_tags_single_proc(all_tags, regex, options)
-    # read out filtered tags back from their temp pickles
+        filtered_tag_files = [filter_tags(0, all_tags, regex, options)]
+    # read filtered tags back from their temp pickles
     good_tags = []
-    for filename in good_tag_files:
+    for filename in filtered_tag_files:
         temp_tags = cPickle.load(open(filename))
         good_tags.extend(temp_tags)
         os.remove(filename)
     chunks, tags = chunker(good_tags)
     print '[3] There are {0} tags remaining after filtering'.format(len(chunks))
+    
     # First pass tag distance
     print '[4] Calculating the Levenshtein distance across the tags'
     if options.multiprocessing:
-        print '\t[Info] Using multiprocessing...'
         re_chunk = []
         # split tags up into groups of 500 each
         for i in xrange(0,len(chunks),500):
             group_chunk = chunks[i:i+500]
             re_chunk.append(group_chunk)
-        results = q_runner(options.nprocs, worker, re_chunk, edit_distance = options.ed, tag_length = options.tl)
-        # need to rebuild the arrays from the component parts
+        results = multiprocessing_queue(options.nprocs, 
+                            first_pass_tag_distance_worker, 
+                            re_chunk, 
+                            edit_distance = options.ed, 
+                            tag_length = options.tl
+                            )
+        # we need to rebuild the arrays from the component parts
         # first, ensure the filenames are sorted according to their input order
         results = sorted(results, key=itemgetter(0))
     else:
-        # mock the return from q_runner to we don't need to change below
-        results = [(1, worker_first(chunks, options.ed, options.tl),)]
+        # mock the return from multiprocessing_queue to we don't need to change below
+        results = [(0, first_pass_tag_distance(chunks, options.ed, options.tl),)]
     distances = None
     for filename in results:
         temp_array = cPickle.load(open(filename[1]))
@@ -414,6 +443,7 @@ def main():
             distances = temp_array
         else:
             distances = numpy.vstack((distances, temp_array))
+    
     # Find those tags with the comparisons >= options.ed
     if options.greater:
         all_distances = xrange(options.ed,options.tl)
@@ -421,17 +451,22 @@ def main():
         all_distances = [options.ed]
     if options.output:
         outfile = open(options.output, 'w')
+    
     # Second pass tag distances
     for ed in all_distances:
-        print '\n[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(ed)
+        print '[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(ed)
         most_indices = numpy.nonzero(distances[:,ed] >= max(distances[:,ed]))[0]
         most_chunked = ()
         for tag in tags[most_indices]:
             most_chunked += ((tag, good_tags),)
         if options.multiprocessing:
-            all_keepers = q_runner(options.nprocs, worker2, most_chunked, edit_distance = ed)
+            all_keepers = multiprocessing_queue(
+                            options.nprocs, 
+                            second_pass_tag_distance_worker, 
+                            most_chunked, 
+                            edit_distance = ed)
         else:
-            all_keepers = single_worker2(most_chunked, ed)
+            all_keepers = [get_reduced_distances(chunk, ed) for chunk in most_chunked]
         max_length = 0
         for filename in all_keepers:
             keeper = cPickle.load(open(filename))
@@ -441,22 +476,9 @@ def main():
                 pass
             os.remove(filename)
         if not options.output:
-            print '\n\n\tMinimum edit distance {0} tags'.format(ed)
-            print '\t*****************************'
-            for k,v in enumerate(largest):
-                if not options.rescan:
-                    print "\tTag{0} = {1}".format(k,v)
-                else:
-                    print "\tTag{0} = {1}, {2}".format(k,rescanned_tags[v],v)
-            print '\n'
+            results_to_stdout(ed, largest, options, rescanned_tags)
         else:
-            outfile.write("[{0}nt ed{1}]\n".format(options.tl, ed))
-            for k,v in enumerate(largest):
-                if not options.rescan:
-                    outfile.write("Tag{0}:{1}\n".format(k,v))
-                else:
-                    outfile.write("\tTag{0}:{1},{2}\n".format(k,rescanned_tags[v],v))
-            print '\n'
+            results_to_outfile(ed, largest, options, rescanned_tags, outfile)
     if options.output:
         outfile.close()
 
