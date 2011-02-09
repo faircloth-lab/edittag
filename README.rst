@@ -26,10 +26,10 @@ adapters and PCR primers. edittag differs from other approaches:
 We provide several large sets of edit metric sequence tags designed
 using edittag in the following formats:
 
--  `text`_ - this file is in an appropriate format for
+-  text_ - this file is in an appropriate format for
    ``check_levenshtien_distance.py``
--  `csv`_
--  `sqlite database`_
+-  csv_
+-  sqlite database_
 
 Citation
 --------
@@ -98,12 +98,10 @@ Amazon Machine Instance (not yet implemented)
 2. Run our instance with
 
 .. _`https://github.com/BadDNA/edittag/downloads`: https://github.com/BadDNA/edittag/downloads
-.. _Creative Commons Attribution 3.0 United States
-License: http://creativecommons.org/licenses/by/3.0/us/
+.. _Creative Commons Attribution 3.0 United States License: http://creativecommons.org/licenses/by/3.0/us/
 .. _text: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt
 .. _csv: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv
-.. _sqlite
-database: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip
+.. _sqlite database: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip
 .. _Python 2.7.x: http://www.python.org/
 .. _numpy: http://numpy.scipy.org
 .. _py-levenshtein: http://pylevenshtein.googlecode.com
