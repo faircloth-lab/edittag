@@ -29,7 +29,7 @@ using edittag in the following formats:
 -  text_ - this file is in an appropriate format for
    ``check_levenshtien_distance.py``
 -  csv_
--  sqlite database_
+-  `sqlite database`_
 
 Citation
 --------
