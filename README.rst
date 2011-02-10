@@ -36,7 +36,9 @@ Citation
 
 ::
 
-    Cite.
+    Faircloth BC, Glenn TC.  Large sets of edit-metric sequence identification 
+    tags to facilitate large-scale multiplexing of reads from massively 
+    parallel sequencing.  doi_
 
 Dependencies
 ------------
@@ -45,63 +47,94 @@ Dependencies
 -  `numpy`_ (tested with 1.5.1)
 -  `py-levenshtein`_ [optional but strongly recommended]
 -  `mod-primer3`_ [optional]
+-  `nose >= 1.0.0`_ [optional - for unittests]
 
 Availability
 ------------
 
--  tar.gz (coming soon)
+-  tar.gz
 -  repository
 -  Amazon Machine Instance # (coming soon)
 
 Installation
 ------------
 
-tar.gz (not yet implemented)
+easy_install
+~~~~~~~~~~~~
+
+.. code-block:: bash
+
+    easy_install edittag
+
+tar.gz
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+.. code-block:: bash
 
+    wget package.tar.gz
     tar -xzf package.tar.gz
     python setup.py install
 
 repository
 ~~~~~~~~~~
 
-::
+.. code-block:: bash
 
     git clone git://github.com/baddna/edittag.git edittag
-    chmod 0755 edittag/*.py
-    ensure edittag is in your path
 
-The steps below are only necessary if you want to use primer3 to
-integrate sequence tags to PCR primers:
 
-::
+optional package (py-levenshtein)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    cd git/edittag/edittag/lib/primer3
-    git submodule init && git submodule update
-    cd ../../../../
+.. code-block:: bash
+
+    wget http://pylevenshtein.googlecode.com/files/python-Levenshtein-0.10.1.tar.bz2
+    tar -xzvf python-Levenshtein-0.10.1.tar.bz2
+    python setup.py install
+
+
+optional package (primer3)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you wish to design primers incorporating edit metric sequence tags, you 
+need to first install a modified version of primer3:
+
+.. code-block:: bash
+
     git clone git://github.com/baddna/mod-primer3.git
     cd mod-primer3/src
     make
     make install
 
-Ensure both ``edittag`` and ``mod-primer3`` are in your path.
-Alternatively, move the binaries from mod-primer3 to a location in your
+Ensure that you move the binaries from mod-primer3 to a location in your
 path (move at least ``primer3-long`` and ``primer3_config`` into the
 same directory in your path). You can then run
+
+Testing
+-------
+
+.. code-block:: python
+
+    # Testing requires numpy and nose
+    import edittag
+    edittag.test()
+
+
+Alternatives sources
+--------------------
 
 Amazon Machine Instance (not yet implemented)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 1. Create an account on Amazon EC2.
-2. Run our instance with
+2. Start AMI # xxxxx
 
 .. _`https://github.com/BadDNA/edittag/downloads`: https://github.com/BadDNA/edittag/downloads
 .. _Creative Commons Attribution 3.0 United States License: http://creativecommons.org/licenses/by/3.0/us/
 .. _text: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt
 .. _csv: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv
 .. _sqlite database: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip
+.. _doi:  http://dx.doi.org/
 .. _Python 2.7.x: http://www.python.org/
 .. _numpy: http://numpy.scipy.org
 .. _py-levenshtein: http://pylevenshtein.googlecode.com
