@@ -2,3 +2,5 @@
 *.tmproj
 *.pyc
 _build
+dist/
+edittag.egg-info/
