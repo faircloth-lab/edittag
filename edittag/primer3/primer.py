@@ -28,11 +28,12 @@ except:
 
 
 class Settings:
-    def __init__(self):
+    def __init__(self, binary = 'primer3_core'):
         '''set default primer3 params'''
         #pdb.set_trace()
         self.td = None
         self.params = {}
+        self.binary = binary
         # create temporary directory
         if not self.td or not os.path.isdir(self.td):
             self.td = tempfile.mkdtemp(prefix='py-primer3-', suffix='')
@@ -73,7 +74,7 @@ class Settings:
         self.params['PRIMER_DNTP_CONC']                 = 0.125 # mM
         self.params['PRIMER_THERMODYNAMIC_ALIGNMENT']   = 1
         if not path:
-            self.params['PRIMER_THERMODYNAMIC_PARAMETERS_PATH']    = os.path.join(os.path.dirname(self._which('primer3_core')), 'primer3_config/')
+            self.params['PRIMER_THERMODYNAMIC_PARAMETERS_PATH']    = os.path.join(os.path.dirname(self._which(self.binary)), 'primer3_config/')
         else:
             self.params['PRIMER_THERMODYNAMIC_PARAMETERS_PATH']    = path
         self.params['PRIMER_MAX_POLY_X']                = 3     # nt
