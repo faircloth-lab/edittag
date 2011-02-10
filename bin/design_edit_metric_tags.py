@@ -31,8 +31,8 @@ try:
     from Levenshtein import distance
     from Levenshtein import hamming
 except:
-    from lib.levenshtein import distance
-    from lib.levenshtein import hamming
+    from edittag.levenshtein import distance
+    from edittag.levenshtein import hamming
 
 
 def interface():

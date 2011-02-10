@@ -52,13 +52,13 @@ import numpy
 import optparse
 import ConfigParser
 
-from lib.helpers import get_tag_array
+from edittag.helpers import get_tag_array
 try:
     from Levenshtein import distance
     from Levenshtein import hamming
 except:
-    from lib.levenshtein import distance
-    from lib.levenshtein import hamming
+    from edittag.levenshtein import distance
+    from edittag.levenshtein import hamming
 
 import pdb
 

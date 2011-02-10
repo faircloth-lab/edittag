@@ -22,9 +22,9 @@ import optparse
 import ConfigParser
 from operator import itemgetter
 
-from lib.primer3 import primer
-from lib.helpers import get_tag_flows
-from lib.helpers import get_tag_array
+from edittag.primer3 import primer
+from edittag.helpers import get_tag_flows
+from edittag.helpers import get_tag_array
 
 
 def interface():

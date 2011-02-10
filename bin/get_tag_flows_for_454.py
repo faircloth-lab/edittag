@@ -17,8 +17,8 @@ import pdb
 import optparse
 import ConfigParser
 from operator import itemgetter
-from lib.helpers import get_tag_flows
-from lib.helpers import get_tag_dict
+from edittag.helpers import get_tag_flows
+from edittag.helpers import get_tag_dict
 
 def interface():
     '''Command-line interface'''

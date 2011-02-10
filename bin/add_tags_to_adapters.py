@@ -19,8 +19,8 @@ import sys
 import optparse
 import string
 import ConfigParser
-from lib.helpers import get_tag_array
-from lib.helpers import get_rev_comp
+from edittag.helpers import get_tag_array
+from edittag.helpers import get_rev_comp
 
 
 def interface():
