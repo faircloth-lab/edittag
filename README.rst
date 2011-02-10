@@ -62,14 +62,14 @@ Installation
 easy_install
 ~~~~~~~~~~~~
 
-.. code-block:: bash
+::
 
     easy_install edittag
 
 tar.gz
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: bash
+::
 
     wget package.tar.gz
     tar -xzf package.tar.gz
@@ -78,7 +78,7 @@ tar.gz
 repository
 ~~~~~~~~~~
 
-.. code-block:: bash
+::
 
     git clone git://github.com/baddna/edittag.git edittag
 
@@ -86,7 +86,7 @@ repository
 optional package (py-levenshtein)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: bash
+::
 
     wget http://pylevenshtein.googlecode.com/files/python-Levenshtein-0.10.1.tar.bz2
     tar -xzvf python-Levenshtein-0.10.1.tar.bz2
@@ -99,7 +99,7 @@ optional package (primer3)
 If you wish to design primers incorporating edit metric sequence tags, you 
 need to first install a modified version of primer3:
 
-.. code-block:: bash
+::
 
     git clone git://github.com/baddna/mod-primer3.git
     cd mod-primer3/src
@@ -113,7 +113,7 @@ same directory in your path). You can then run
 Testing
 -------
 
-.. code-block:: python
+::
 
     # Testing requires numpy and nose
     import edittag
