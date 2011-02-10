@@ -194,7 +194,7 @@ def insert_primers(cur, data):
 
 def get_primer3_settings():
     """set the tagging parameters of a particular primer"""
-    settings = primer.Settings()
+    settings = primer.Settings(binary='primer3_long')
     settings.reduced()
     settings.params['PRIMER_MAX_SIZE']                  = 55
     settings.params['PRIMER_PICK_ANYWAY']               = 1
