@@ -1,5 +1,9 @@
+from setuptools import setup, find_packages
+
+
 if __name__ == '__main__':
     setup(
+        name='edittag',
         version="1.0",
         description="Design and check sets of edit metric sequence tags.",
         author="Brant Faircloth",
@@ -17,9 +21,13 @@ if __name__ == '__main__':
              ],
         requires=['NumPy (>=1.3)',],
         long_description=open('README.txt').read(),
+        package_data = {
+                # If any package contains *.txt or *.rst files, include them:
+                '': ['*.txt', '*.rst'],
+                'edittag': ['tests/test-data/*.txt'],
+            },
         packages=['edittag',
                 'edittag.tests',
-                'edittag.test-data',
                 'edittag.primer3'
                 ],
         scripts=['bin/add_tags_to_adapters.py',
@@ -28,5 +36,7 @@ if __name__ == '__main__':
                 'bin/estimate_sequencing_error_effects.py',
                 'bin/get_tag_flows_for_454.py',
                 'bin/validate_edit_metric_tags.py'
-                ]
+                ],
+
+        
         )
