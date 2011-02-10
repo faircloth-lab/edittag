@@ -1,10 +1,12 @@
+import distribute_setup
+distribute_setup.use_setuptools()
 from setuptools import setup, find_packages
 
 
 if __name__ == '__main__':
     setup(
         name='edittag',
-        version="1.0rc1",
+        version="1.0rc2",
         description="Design and check sets of edit metric sequence tags.",
         author="Brant Faircloth",
         author_email="brant.faircloth+edittag@gmail.com ",
