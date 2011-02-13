@@ -34,11 +34,9 @@ using edittag in the following formats:
 Citation
 --------
 
-::
-
-    Faircloth BC, Glenn TC.  Large sets of edit-metric sequence identification 
-    tags to facilitate large-scale multiplexing of reads from massively 
-    parallel sequencing.  http://precedings.nature.com/documents/5672/version/1
+Faircloth BC, Glenn TC.  Large sets of edit-metric sequence identification 
+tags to facilitate large-scale multiplexing of reads from massively 
+parallel sequencing.  `http://precedings.nature.com/documents/5672/version/1`_
 
 Dependencies
 ------------
@@ -153,6 +151,7 @@ Amazon Machine Instance (not yet implemented)
     
 
 .. _`https://github.com/BadDNA/edittag/downloads`: https://github.com/BadDNA/edittag/downloads
+.. _`http://precedings.nature.com/documents/5672/version/1`: http://precedings.nature.com/documents/5672/version/1
 .. _Creative Commons Attribution 3.0 United States License: http://creativecommons.org/licenses/by/3.0/us/
 .. _text: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt
 .. _csv: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv
