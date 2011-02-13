@@ -7,13 +7,12 @@ get_tag_flows_for_454.py
 Created by Brant Faircloth on 04 October 2010 11:02 PDT (-0700).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
 
-USAGE:  python tag_flows_for_454.py --input tags.txt
+USAGE:  get_tag_flows_for_454.py --input='tags.txt' --section='6nt ed3'
 
 """
-
+#import pdb
 import os
 import sys
-import pdb
 import optparse
 import ConfigParser
 from operator import itemgetter

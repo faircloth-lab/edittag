@@ -11,7 +11,7 @@ PURPOSE:  Determines the edit distances between various groups of linkers in the
 input file passed via CLI. Can also compute Hamming distance in place of
 Levenshtein.
 
-USAGE:  python check_levenshtein_distance.py --input=my_edit_metric_tags.txt --verbose
+USAGE:  validate_edit_metric_tags.py --input=tmp/tags.txt --section='6nt ed3' --verbose
 
 INPUT: my_edit_metric_tags.txt looks something like any of the following three:
 
@@ -47,7 +47,10 @@ Tag6 = TGTG
 
 """
 
+#import pdb
+
 import os
+import sys
 import numpy
 import optparse
 import ConfigParser
@@ -59,8 +62,6 @@ try:
 except:
     from edittag.levenshtein import distance
     from edittag.levenshtein import hamming
-
-import pdb
 
 
 def interface():

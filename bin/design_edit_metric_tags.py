@@ -7,12 +7,12 @@ make_levenshtein_tags.py
 Created by Brant Faircloth on 28 May 2010 23:27 PDT (-0700).
 Copyright (c) 2010 Brant C. Faircloth. All rights reserved.
 
-USAGE:   python design_edit_metric_tags.py --tag-length=8 --edit-distance=3 \
+USAGE:  design_edit_metric_tags.py --tag-length=8 --edit-distance=3 \
             --no-polybase --gc --comp --multiprocessing \
             --min-and-greater | tee 8_nt.txt
 """
 
-import pdb
+#import pdb
 import os
 import sys
 import string
