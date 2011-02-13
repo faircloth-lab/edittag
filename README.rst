@@ -38,7 +38,7 @@ Citation
 
     Faircloth BC, Glenn TC.  Large sets of edit-metric sequence identification 
     tags to facilitate large-scale multiplexing of reads from massively 
-    parallel sequencing.  doi_
+    parallel sequencing.  http://precedings.nature.com/documents/5672/version/1
 
 Dependencies
 ------------
@@ -47,7 +47,7 @@ Dependencies
 -  `numpy`_ (tested with 1.5.1)
 -  `py-levenshtein`_ [optional but strongly recommended]
 -  `mod-primer3`_ [optional]
--  `nose >= 1.0.0`_ [optional - for unittests]
+-  `nose`_ [optional - for unittests]
 
 Availability
 ------------
@@ -107,8 +107,8 @@ need to first install a modified version of primer3:
     make install
 
 Ensure that you move the binaries from mod-primer3 to a location in your
-path (move at least ``primer3-long`` and ``primer3_config`` into the
-same directory in your path). You can then run
+path (move at least ``primer3-long`` and ``primer3_config`` into identical 
+directories in your path).
 
 Testing
 -------
@@ -129,13 +129,36 @@ Amazon Machine Instance (not yet implemented)
 1. Create an account on Amazon EC2.
 2. Start AMI # xxxxx
 
+::
+    
+    # activate the edittag virtualenv
+    % workon edittag
+    
+    # generate some tags
+    % design_edit_metric_tags.py --tag-length=6 --edit-distance=3 \
+        --no-polybase --gc --comp --min-and-greater --output tmp/tags.txt
+    
+    # validate the 6 nucleotide, edit distance 3 tag set
+    % validate_edit_metric_tags.py 
+        --input=tmp/tags.txt
+        --section='6nt ed3'
+        --verbose
+    
+    # add those tags to a primer set
+    % add_tags_to_primers.py --left-primer=GTTATGCATGAACGTAATGCTC --right-primer=CGCGCATGGTGGATTCACAATCC \
+        --input tmp/tags.txt --section='6nt ed3'
+        --sort=pair_hairpin_either,pair_penalty,cycles \
+        --remove-common --keep-database \
+        --output tmp/trnH_tagged_with_10_nt_ed_5_tags.csv
+    
+
 .. _`https://github.com/BadDNA/edittag/downloads`: https://github.com/BadDNA/edittag/downloads
 .. _Creative Commons Attribution 3.0 United States License: http://creativecommons.org/licenses/by/3.0/us/
 .. _text: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt
 .. _csv: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv
 .. _sqlite database: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip
-.. _doi:  http://dx.doi.org/
 .. _Python 2.7.x: http://www.python.org/
 .. _numpy: http://numpy.scipy.org
 .. _py-levenshtein: http://pylevenshtein.googlecode.com
 .. _mod-primer3: https://github.com/BadDNA/mod-primer3
+.. _nose: http://somethingaboutorange.com/mrl/projects/nose/1.0.0/
