@@ -23,6 +23,7 @@ import multiprocessing
 import operator
 import tempfile
 import cPickle
+import ConfigParser
 from operator import itemgetter
 # tested re2 DFA module in place of re2 here, but there were no substantial 
 # performance gains for simple regex
@@ -325,22 +326,26 @@ def make_tag_batches(tags, size):
     output += (temp,)
     return output
 
-def get_rescan_generator(file, length):
-    for line in open(file, 'rU').readlines():
-        if line and not line.startswith('#'):
-            tag_fragment = line.split('\t')[1][:length]
-            yield tuple(tag_fragment)
+def get_rescan_generator(file, length, tags):
+    for name, tag in tags:
+        tag_fragment = tag[:length]
+        yield tuple(tag_fragment)
 
 def tag_rescanner(file, length):
     """if we need to rescan tags or parts of tags (e.g. first x bases) then 
     this does it"""
+    conf = ConfigParser.ConfigParser()
+    conf.read(file)
+    # assert there is only one section
+    assert len(conf.sections()) == 1, "You may only rescan a single-section input file"
+    #pdb.set_trace()
+    # get tags for section
     rescanned_tags = {}
-    for line in open(file, 'rU').readlines():
-        if line and not line.startswith('#'):
-            tag = line.split('\t')[1].strip()
+    tags = conf.items(conf.sections()[0])
+    for name, tag in tags:
             tag_fragment = tag[:length]
             rescanned_tags[tag_fragment] = tag
-    g = get_rescan_generator(file, length)
+    g = get_rescan_generator(file, length, tags)
     return rescanned_tags, g
 
 def results_to_stdout(ed, largest, options, rescanned_tags):
