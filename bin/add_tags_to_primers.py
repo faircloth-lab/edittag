@@ -15,7 +15,7 @@ USAGE:  add_tags_to_primers.py --left-primer=GTTATGCATGAACGTAATGCTC --right-prim
 
 """
 
-#import pdb
+import pdb
 import os
 import sys
 import sqlite3
@@ -232,24 +232,25 @@ def write_results(cur, output, sort):
     o.close()
 
 def design_and_store_primers(options, cur, section, tags, p3, settings):
-    """iterate through tags, designing primers by removing commong 
+    """iterate through tags, designing primers by removing common
     bases, integrating tags, and adding pigtails"""
     for tag in tags:
+        #pdb.set_trace()
         # use private method from p3wrapr to get common bases btw. tag and
         # pigtail - we're doing this because we want to add the pigtails to
         # the tags and then just treat that whole unit as the tag, instead of
         # adding the tag, then adding the pigtail.
         if options.common:
-            p3.tagged_pt_common, p3.tagged_pt_tag = p3._common(options.pigtail_seq, tag[1])
+            p3.tagged_pt_common, p3.tagged_pt_tag = p3._common(options.pigtail_seq, tag)
         else:
             p3.tagged_pt_common, p3.tagged_pt_tag = options.pigtail_seq, options.pigtail_seq
-        stag = p3.tagged_pt_tag + tag[1]
+        stag = p3.tagged_pt_tag + tag
         p3.dtag(settings, seqtag=stag)
         for k in p3.tagged_primers:
             if p3.tagged_primers[k]:
                 p3.tagged_primers[k]['SECTION'] = section
-                p3.tagged_primers[k]['CYCLES'] = get_tag_flows(tag[1])
-                p3.tagged_primers[k]['TAG'] = tag[1]
+                p3.tagged_primers[k]['CYCLES'] = get_tag_flows(tag)
+                p3.tagged_primers[k]['TAG'] = tag
                 p3.tagged_primers[k]['UNMODIFIED'] = 0
                 p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 0
                 # sometimes there won't be any problems
@@ -313,8 +314,8 @@ def main():
             tags = get_tag_array(conf.items(section))
             design_and_store_primers(options, cur, section, tags, p3, settings)
     elif options.section:
-        tags = get_tag_array(conf.items(section))
-        design_and_store_primers(options, cur, section, tags, p3, settings)
+        tags = get_tag_array(conf.items(options.section))
+        design_and_store_primers(options, cur, options.section, tags, p3, settings)
     conn.commit()
     # close the tag input file - it's not needed anymore
     #f.close()
