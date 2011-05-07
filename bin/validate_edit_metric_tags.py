@@ -47,7 +47,7 @@ Tag6 = TGTG
 
 """
 
-#import pdb
+import pdb
 
 import os
 import sys
