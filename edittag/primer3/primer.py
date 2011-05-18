@@ -400,7 +400,7 @@ class Primers:
             self.tagged_primers = None
             self.tagged_best = None
     
-    def dtag(self, tagging, delete=True, **kwargs):
+    def dtag(self, tagging, remove_common = True, delete=True, **kwargs):
         '''tag and check newly designed primers'''
         if self.primers_designed:
             self.tagging = tagging
@@ -411,9 +411,13 @@ class Primers:
             for p in primers:
                 for ts in kwargs:
                     if kwargs[ts]:
-                        self.tagged_l_common, self.tagged_l_tag = self._common(kwargs[ts], self.primers[p]['PRIMER_LEFT_SEQUENCE'])
+                        if remove_common:
+                            self.tagged_l_common, self.tagged_l_tag = self._common(kwargs[ts], self.primers[p]['PRIMER_LEFT_SEQUENCE'])
+                            self.tagged_r_common, self.tagged_r_tag = self._common(kwargs[ts], self.primers[p]['PRIMER_RIGHT_SEQUENCE'])
+                        else:
+                            self.tagged_l_common, self.tagged_l_tag = kwargs[ts], kwargs[ts]
+                            self.tagged_r_common, self.tagged_r_tag = kwargs[ts], kwargs[ts]
                         l_tagged = self.tagged_l_tag + self.primers[p]['PRIMER_LEFT_SEQUENCE']
-                        self.tagged_r_common, self.tagged_r_tag = self._common(kwargs[ts], self.primers[p]['PRIMER_RIGHT_SEQUENCE'])
                         r_tagged = self.tagged_r_tag + self.primers[p]['PRIMER_RIGHT_SEQUENCE']
                         # reinitialize with reduced set of Primer3Params
                         self._locals(self.tagging, left_primer=l_tagged, right_primer=r_tagged, name='tagging')
@@ -429,6 +433,43 @@ class Primers:
             self._best()
             #else:
                 
+            #QtCore.pyqtRemoveInputHook()
+            #pdb.set_trace()
+        else:
+            self.tagged_primers = None
+            self.tagged_best = None
+
+    def ftag(self, tagging, delete=True, f_left = 'CGTATCGCCTCCCTCGCGCCATCAG', f_right = 'CTATGCGCCTTGCCAGCCCGCTCAG', **kwargs):
+        '''tag and check newly designed primers'''
+        if self.primers_designed:
+            self.tagging = tagging
+            self.tagged_primers = {}
+            #pdb.set_trace()
+            primers = self.primers.keys()
+            primers.remove('metadata')
+            for p in primers:
+                for ts in kwargs:
+                    if kwargs[ts]:
+                        self.tagged_l_common = False
+                        self.tagged_l_tag = kwargs[ts][0]
+                        l_tagged = f_left + self.tagged_l_tag + self.primers[p]['PRIMER_LEFT_SEQUENCE']
+                        self.tagged_r_common = False
+                        self.tagged_r_tag = kwargs[ts][0]
+                        r_tagged = f_right + self.tagged_r_tag + self.primers[p]['PRIMER_RIGHT_SEQUENCE']
+                        # reinitialize with reduced set of Primer3Params
+                        self._locals(self.tagging, left_primer=l_tagged, right_primer=r_tagged, name='tagging')
+                        k = '%s_%s_%s' % (p, ts, 'f')
+                        self.tagged_primers[k] = self._p_design()[0]
+                        self.tagged_primers[k]['PRIMER_TAGGED'] = 'BOTH'
+                        self.tagged_primers[k]['PRIMER_LEFT_TAG_COMMON_BASES'] = self.tagged_l_common
+                        self.tagged_primers[k]['PRIMER_RIGHT_TAG_COMMON_BASES'] = self.tagged_r_common
+                        self.tagged_primers[k]['PRIMER_LEFT_TAG'] = self.tagged_l_tag
+                        self.tagged_primers[k]['PRIMER_RIGHT_TAG'] = self.tagged_r_tag
+            #if len(self.tagged_primers) > 1:
+            self._good()
+            self._best()
+            #else:
+
             #QtCore.pyqtRemoveInputHook()
             #pdb.set_trace()
         else:

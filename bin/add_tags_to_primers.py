@@ -15,9 +15,10 @@ USAGE:  add_tags_to_primers.py --left-primer=GTTATGCATGAACGTAATGCTC --right-prim
 
 """
 
-#import pdb
+import pdb
 import os
 import sys
+import numpy
 import sqlite3
 import optparse
 import ConfigParser
@@ -52,7 +53,13 @@ def interface():
         type='string', default = None, 
         help='The path to file for program output.',
         metavar='FILE')
-        
+    
+    p.add_option('--fusion', dest = 'fusion', action='store_true', 
+        default=False, help='Design 454-style `fusion` primers.')
+
+    p.add_option('--fusion-pairs', dest = 'fusion_pairs', action='store_true', 
+        default=False, help='Evaluate pairs of fusion primers')
+    
     p.add_option('--pigtail', dest = 'pigtail', action='store_true', 
         default=False, help='Pigtail each tagged primer sequence.')
         
@@ -231,6 +238,23 @@ def write_results(cur, output, sort):
         o.write('{0}\n'.format(','.join([str(i) for i in row])))
     o.close()
 
+def store_primers(cur, p3, section, tag):
+    for k in p3.tagged_primers:
+        if p3.tagged_primers[k]:
+            p3.tagged_primers[k]['SECTION'] = section
+            p3.tagged_primers[k]['CYCLES'] = get_tag_flows(tag)
+            p3.tagged_primers[k]['TAG'] = tag
+            p3.tagged_primers[k]['UNMODIFIED'] = 0
+            p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 0
+            # sometimes there won't be any problems
+            for p in ['PRIMER_LEFT_PROBLEMS', 'PRIMER_RIGHT_PROBLEMS']:
+                if p not in p3.tagged_primers[k].keys():
+                    p3.tagged_primers[k][p] = None
+                elif 'Hairpin stability too high;' in p3.tagged_primers[k][p]:
+                    p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 1
+            #pdb.set_trace()
+            insert_primers(cur, p3.tagged_primers[k])
+
 def design_and_store_primers(options, cur, section, tags, p3, settings):
     """iterate through tags, designing primers by removing common
     bases, integrating tags, and adding pigtails"""
@@ -240,27 +264,26 @@ def design_and_store_primers(options, cur, section, tags, p3, settings):
         # pigtail - we're doing this because we want to add the pigtails to
         # the tags and then just treat that whole unit as the tag, instead of
         # adding the tag, then adding the pigtail.
-        if options.common:
-            p3.tagged_pt_common, p3.tagged_pt_tag = p3._common(options.pigtail_seq, tag)
-        else:
-            p3.tagged_pt_common, p3.tagged_pt_tag = options.pigtail_seq, options.pigtail_seq
-        stag = p3.tagged_pt_tag + tag
-        p3.dtag(settings, seqtag=stag)
-        for k in p3.tagged_primers:
-            if p3.tagged_primers[k]:
-                p3.tagged_primers[k]['SECTION'] = section
-                p3.tagged_primers[k]['CYCLES'] = get_tag_flows(tag)
-                p3.tagged_primers[k]['TAG'] = tag
-                p3.tagged_primers[k]['UNMODIFIED'] = 0
-                p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 0
-                # sometimes there won't be any problems
-                for p in ['PRIMER_LEFT_PROBLEMS', 'PRIMER_RIGHT_PROBLEMS']:
-                    if p not in p3.tagged_primers[k].keys():
-                        p3.tagged_primers[k][p] = None
-                    elif 'Hairpin stability too high;' in p3.tagged_primers[k][p]:
-                        p3.tagged_primers[k]['PAIR_HAIRPIN_EITHER'] = 1
-                #pdb.set_trace()
-                insert_primers(cur, p3.tagged_primers[k])
+        if not options.fusion:
+            if options.common:
+                p3.tagged_pt_common, p3.tagged_pt_tag = p3._common(options.pigtail_seq, tag)
+            elif options.pigtail:
+                p3.tagged_pt_common, p3.tagged_pt_tag = options.pigtail_seq, options.pigtail_seq
+            else:
+                p3.tagged_pt_common, p3.tagged_pt_tag = '',''
+            stag = p3.tagged_pt_tag + tag
+            p3.dtag(settings, options.common, seqtag = stag)
+            store_primers(cur, p3, section, tag)
+        if options.fusion:
+            if options.fusion_pairs:
+                tag_pairs = [(tag, i) for i in tags[numpy.where(tags==tag)[0][0]:]]
+                tag_pairs = [(tag, tag)] + tag_pairs
+            else:
+                tag_pairs = [(tag, tag)]
+            for pair in tag_pairs:
+                print pair
+                p3.ftag(settings, seqtag_pair = pair)
+                store_primers(cur, p3, section, tag)
     
 def main():
     options, args = interface()
