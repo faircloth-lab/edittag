@@ -15,7 +15,7 @@ USAGE:  add_tags_to_primers.py --left-primer=GTTATGCATGAACGTAATGCTC --right-prim
 
 """
 
-import pdb
+#import pdb
 import os
 import sys
 import sqlite3
