@@ -31,6 +31,11 @@ using edittag in the following formats:
 -  csv_
 -  `sqlite database`_
 
+Documentation
+-------------
+
+- `http://baddna.github.com/edittag/`_
+
 Citation
 --------
 
