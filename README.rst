@@ -107,8 +107,7 @@ need to first install a modified version of primer3:
     git clone git://github.com/baddna/mod-primer3.git
     cd mod-primer3/src
     make
-    make install
-
+    
 Ensure that you move the binaries from mod-primer3 to a location in your
 path (move at least ``primer3-long`` and ``primer3_config`` into identical 
 directories in your path).
