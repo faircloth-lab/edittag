@@ -28,12 +28,6 @@ from operator import itemgetter
 # tested re2 DFA module in place of re2 here, but there were no substantial 
 # performance gains for simple regex
 import re
-try:
-    from Levenshtein import distance
-    from Levenshtein import hamming
-except:
-    from edittag.levenshtein import distance
-    from edittag.levenshtein import hamming
 
 
 def interface():
@@ -67,6 +61,9 @@ help='Remove tags with GC content (%) 40 > x > 60')
 
     p.add_option('--comp', dest = 'comp', action='store_true', default=False, 
 help='Remove tags that are perfect self-complements')
+
+    p.add_option('--hamming', dest = 'hamming', action='store_true', default=False, 
+help='Use Hamming distance in place of edit (Levenshtein) distance.')
     
     # c is on by default now
     #p.add_option('--use-c', dest = 'clev', action='store_true', default=False, 
@@ -383,10 +380,22 @@ def main():
     good_tags = ()
     good_tags_dict = {}
     options, args = interface()
+    if not options.hamming:
+        try:
+            from Levenshtein import distance
+        except ImportError:
+            from edittag.levenshtein import distance
+    else:
+        print "[Info] Using **Hamming** distances"
+        try:
+            from Levenshtein import hamming as distance
+        except ImportError:
+            from edittag.levenshtein import hamming as distance
+    # make the import global, otherwise the scope will be limited to main()
+    global distance
     regex = re.compile('A{3,}|C{3,}|T{3,}|G{3,}')
     if options.multiprocessing:
         print "[Info] Using multiprocessing with {0} cores".format(options.nprocs)
-    
     # Generate tags
     print '[1] Generating all combinations of tags'
     if options.tl >= 9:
@@ -395,8 +404,10 @@ def main():
         all_tags = itertools.product('ACGT', repeat = options.tl)
         rescanned_tags = None
     else:
-        rescanned_tags, all_tags = tag_rescanner(options.rescan, options.rescan_length)
-    
+        # this is sort of lazy, but to keep from having to rewrite
+        # code, just set the options.tl value to options.rescan_length
+        options.tl = options.rescan_length
+        rescanned_tags, all_tags = tag_rescanner(options.rescan, options.tl)
     # Filter tags
     print '[2] If selected, removing tags based on filter criteria'
     if options.tl >= 9:
@@ -420,7 +431,6 @@ def main():
         os.remove(filename)
     chunks, tags = chunker(good_tags)
     print '[3] There are {0} tags remaining after filtering'.format(len(chunks))
-    
     # First pass tag distance
     print '[4] Calculating the Levenshtein distance across the tags'
     if options.multiprocessing:
@@ -456,7 +466,6 @@ def main():
         all_distances = [options.ed]
     if options.output:
         outfile = open(options.output, 'w')
-    
     # Second pass tag distances
     for ed in all_distances:
         print '[5] Finding the set of tags with the most matches at edit_distance >= {0}'.format(ed)
