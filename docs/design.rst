@@ -33,14 +33,15 @@ Tag design options
 
 --multiprocessing   Use multiple processors.  The number of
   cores/processors used is set by default to the max(cores) - 2.  You can
-  explicitly set this option using `--processors`.
+  explicitly set this option using --processors.
 
 --processors=<int>  The number of computing cores/processors to use.
   This defaults to max(cores) - 2.
 
---no-polybase  Filter those tags having greater than two adjacent,
-  identical bases.  Homopolymer bases are problematic on certain
-   sequencing platforms, thus it is useful to avoid homopolymer runs longer
+--no-polybase
+  Filter those tags having greater than two adjacent,
+  identical bases. Homopolymer bases are problematic on certain
+  sequencing platforms, thus it is useful to avoid homopolymer runs longer
   than three.
 
 --gc  Filter those tags having 40 < GC % < 60.
@@ -48,7 +49,7 @@ Tag design options
 --comp  Filter those tags that are perfect self-complements.  Generally,
   this option removes tags likely to form hairpins.
 
---hamming  Use Hamming distance in place of edit (Levenshtein) distance.
+--hamming   Use Hamming distance in place of edit (Levenshtein) distance.
 
 --min-and-greater  Return all tags at the minimum edit distance
   requested, and subsets of those tags falling within consecutively
