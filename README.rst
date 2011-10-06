@@ -1,13 +1,10 @@
-edittag
-=======
+Copyright (c) 2009-2011 Brant C. Faircloth. All rights reserved.
 
-Copyright (c) 2009–2011 Brant C. Faircloth. All rights reserved.
+-  See **LICENSE.md** for standard computer code.
 
--  See ``LICENSE.md`` for standard, 2-clause BSD license covering
-   computer code.
--  Sequence tags available from
-   `https://github.com/BadDNA/edittag/downloads`_ are licensed under
-   `Creative Commons Attribution 3.0 United States License`_.
+- Sequence tags available from
+  https://github.com/faircloth-lab/edittag/downloads are licensed under
+  `Creative Commons Attribution 3.0 United States License`_.
 
 Description
 -----------
@@ -26,15 +23,15 @@ adapters and PCR primers. edittag differs from other approaches:
 We provide several large sets of edit metric sequence tags designed
 using edittag in the following formats:
 
--  text_ - this file is in an appropriate format for
-   ``check_levenshtien_distance.py``
+-  text_ - this file is in an appropriate format for `check_levenshtien_distance.py`
 -  csv_
 -  `sqlite database`_
 
 Documentation
 -------------
+You can find documentation here:
 
-- `http://baddna.github.com/edittag/`_
+http://faircloth-lab.github.com/edittag/
 
 Citation
 --------
@@ -46,49 +43,46 @@ parallel sequencing.  `http://precedings.nature.com/documents/5672/version/1`_
 Dependencies
 ------------
 
--  `Python 2.7.x`_ (should work on 2.6.x)
--  `numpy`_ (tested with 1.5.1)
--  `py-levenshtein`_ [optional but strongly recommended]
--  `mod-primer3`_ [optional]
--  `nose`_ [optional - for unittests]
+-  `Python 2.7.x`_      (should work on 2.6.x)
+-  `numpy`_             (tested with 1.5.1)
+-  `py-levenshtein`_    [optional - strongly recommended]
+-  `mod-primer3`_       [optional - needed for amplicon tagging]
+-  `nose`_              [optional - for unittests]
 
 Availability
 ------------
 
 -  tar.gz
 -  repository
--  Amazon Machine Instance # (coming soon)
 
 Installation
 ------------
 
 easy_install
 ~~~~~~~~~~~~
-
 ::
 
     easy_install edittag
 
-tar.gz
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+tar.gz
+~~~~~~~
 ::
 
     wget package.tar.gz
     tar -xzf package.tar.gz
     python setup.py install
 
-repository
-~~~~~~~~~~
 
+repository
+~~~~~~~~~~~~
 ::
 
-    git clone git://github.com/baddna/edittag.git edittag
+    git clone git://github.com/faircloth-lab/edittag.git edittag
 
 
 optional package (py-levenshtein)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ::
 
     wget http://pylevenshtein.googlecode.com/files/python-Levenshtein-0.10.1.tar.bz2
@@ -97,23 +91,21 @@ optional package (py-levenshtein)
 
 
 optional package (primer3)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you wish to design primers incorporating edit metric sequence tags, you 
-need to first install a modified version of primer3:
-
-::
+need to first install a modified version of primer3:::
 
     git clone git://github.com/baddna/mod-primer3.git
     cd mod-primer3/src
     make
-    
+
 Ensure that you move the binaries from mod-primer3 to a location in your
 path (move at least ``primer3-long`` and ``primer3_config`` into identical 
 directories in your path).
 
 Testing
--------
+--------
 
 ::
 
@@ -122,44 +114,37 @@ Testing
     edittag.test()
 
 
-Alternatives sources
---------------------
-
-Amazon Machine Instance (not yet implemented)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-1. Create an account on Amazon EC2.
-2. Start AMI # xxxxx
+Using edittag
+---------------
 
 ::
-    
-    # activate the edittag virtualenv
-    % workon edittag
-    
+
     # generate some tags
     % design_edit_metric_tags.py --tag-length=6 --edit-distance=3 \
         --no-polybase --gc --comp --min-and-greater --output tmp/tags.txt
-    
+
     # validate the 6 nucleotide, edit distance 3 tag set
     % validate_edit_metric_tags.py 
         --input=tmp/tags.txt
         --section='6nt ed3'
         --verbose
-    
+
     # add those tags to a primer set
-    % add_tags_to_primers.py --left-primer=GTTATGCATGAACGTAATGCTC --right-primer=CGCGCATGGTGGATTCACAATCC \
+    % add_tags_to_primers.py --left-primer=GTTATGCATGAACGTAATGCTC 
+        --right-primer=CGCGCATGGTGGATTCACAATCC \
         --input tmp/tags.txt --section='6nt ed3'
         --sort=pair_hairpin_either,pair_penalty,cycles \
         --remove-common --keep-database \
         --output tmp/trnH_tagged_with_10_nt_ed_5_tags.csv
-    
+
+
 
 .. _`https://github.com/BadDNA/edittag/downloads`: https://github.com/BadDNA/edittag/downloads
 .. _`http://precedings.nature.com/documents/5672/version/1`: http://precedings.nature.com/documents/5672/version/1
 .. _Creative Commons Attribution 3.0 United States License: http://creativecommons.org/licenses/by/3.0/us/
-.. _text: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt
-.. _csv: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv
-.. _sqlite database: https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip
+.. _text: https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.txt
+.. _csv: https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.csv
+.. _sqlite database: https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.sqlite.zip
 .. _Python 2.7.x: http://www.python.org/
 .. _numpy: http://numpy.scipy.org
 .. _py-levenshtein: http://pylevenshtein.googlecode.com
