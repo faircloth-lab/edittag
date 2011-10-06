@@ -1,0 +1,295 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using edit metric sequence tags &mdash; edittag v0.5.0 documentation</title>
+    <link rel="stylesheet" href="static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="edittag v0.5.0 documentation" href="index.html" />
+    <link rel="next" title="Input file formatting" href="formatting.html" />
+    <link rel="prev" title="Validating edit metric tags" href="validation.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="static/small_flask.css" type= "text/css" rel="stylesheet" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="formatting.html" title="Input file formatting"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="validation.html" title="Validating edit metric tags"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">edittag v0.5.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-edit-metric-sequence-tags">
+<span id="using"></span><h1>Using edit metric sequence tags<a class="headerlink" href="#using-edit-metric-sequence-tags" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="adding-sequence-tags-to-sequencing-adapters">
+<h2>Adding sequence tags to sequencing adapters<a class="headerlink" href="#adding-sequence-tags-to-sequencing-adapters" title="Permalink to this headline">¶</a></h2>
+<p>We provide an extremely simple program for integrating sequence tags, output by <tt class="docutils literal"><span class="pre">design_edit_metric_sequence_tags.py</span></tt>, to sequencing adapters.  This program is largely meant for cases where you need to consistently add many sequence tags to a single adapter.  The program is invoked as follows and output is sent to stdout:</p>
+<div class="highlight-python"><pre>python add_tags_to_adapters.py \
+    --5prime=CAAGCAGAAGACGGCATACGAGA --3prime=TGACTGGAGTTC \
+    --section='5nt ed3' --input=test-data/edit_metric_tags.conf</pre>
+</div>
+<div class="section" id="options">
+<h3>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">--input=&lt;FILE&gt;</span></tt> : The input file to check.  The format must follow guidelines in <a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</p>
+<p><tt class="docutils literal"><span class="pre">--5-prime=&lt;string&gt;</span></tt> : The adapter sequence 5&#8217; of the sequence tag.</p>
+<p><tt class="docutils literal"><span class="pre">--3-prime=&lt;string&gt;</span></tt> : The adapter sequence 3&#8217; of the sequence tag.</p>
+<p><tt class="docutils literal"><span class="pre">--section=&lt;string&gt;</span></tt> : The section of tags to apply to the adapter sequence.  Used when an input file contains many sections of tags, and you only want to check one.  When the input file contains multiple sections, and you do not pass this option, the program will output adapters with all the sequence tags in <tt class="docutils literal"><span class="pre">--input</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">--revcomp</span></tt> : Add the reverse complement of the sequence tag rather than the forward complement.</p>
+<p><tt class="docutils literal"><span class="pre">--suppress-orientation</span></tt> : Suppress pretty printing of the results to stdout and just return the adapter sequences.</p>
+</div>
+<div class="section" id="output">
+<h3>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h3>
+<p>Results written to stdout have the following appearance.  Notice that the integrated tag sequence is lower-case:</p>
+<div class="highlight-none"><div class="highlight"><pre>[4nt ed3]
+    5&#39; - AAAAgtcaGGGG - 3&#39;
+    5&#39; - AAAAaaccGGGG - 3&#39;
+    5&#39; - AAAAacagGGGG - 3&#39;
+    5&#39; - AAAAaggaGGGG - 3&#39;
+    5&#39; - AAAAcctaGGGG - 3&#39;
+    5&#39; - AAAAcgatGGGG - 3&#39;
+    5&#39; - AAAAtgtgGGGG - 3&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="adding-sequence-tags-to-pcr-primers">
+<h2>Adding sequence tags to PCR primers<a class="headerlink" href="#adding-sequence-tags-to-pcr-primers" title="Permalink to this headline">¶</a></h2>
+<p>There are several ways to incorporate sequence tags to PCR primers.  In certain cases, you may just add each sequence tag to the 5&#8217; end of the forward &amp; reverse primers.  However, this can introduce unintended secondary structure to each primer (hairpins) or the combination of primers (complementarity), particularly when integrating sequence tags longer than four to five nucleotides.</p>
+<p>We provide a program that integrates sequence tags to upper and lower PCR primers using a <a class="reference external" href="https://github.com/BadDNA/mod-primer3">modified version of primer3 2.2.3</a> (modified to evaluate longer primers).  If requested, this program will also remove common bases between tags and primers and integrate <tt class="docutils literal"><span class="pre">GTTT</span></tt> pigtails to the 5&#8217; ends of the upper and lower primer to encourage <tt class="docutils literal"><span class="pre">+A</span></tt> addition by <em>Taq</em> polymerase, which may be useful in certain contexts.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">As part of the processing undertaken by this program, it will also compute a value, recorded in the <tt class="docutils literal"><span class="pre">values</span></tt> column of the output/database which reports the number of flows required to sequence a particular tag using the 454 platform.  We also include this functionality separate in <a class="reference internal" href="helpers.html#flows"><em>Determining the number of flows per sequence tag</em></a>.</p>
+</div>
+<p>Finally, this program stores all tagged primers in an <a class="reference external" href="http://www.sqlite.org">sqlite</a> database (and csv output file), with which you can easily sort output primers and from which you can easily select sets of primers meeting certain criteria, including random sets of primers for testing purposes.</p>
+<p>You can invoke <tt class="docutils literal"><span class="pre">add_tags_to_primers.py</span></tt> using a command similar to the following:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python add_tags_to_primers.py --input 10_nt_ed_5_tags.txt <span class="se">\</span>
+    --left-primer<span class="o">=</span>GTTATGCATGAACGTAATGCTC
+    --right-primer<span class="o">=</span>CGCGCATGGTGGATTCACAATCC <span class="se">\</span>
+    --output trnH_tagged_with_10_nt_ed_5_tags.csv <span class="se">\</span>
+    --sort<span class="o">=</span>pair_hairpin_either,pair_penalty,cycles
+    --remove-common --keep-database
+</pre></div>
+</div>
+<div class="section" id="id1">
+<h3>Options<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p><tt class="docutils literal"><span class="pre">--input=FILE</span></tt> : The input file to check.  The format must follow guidelines in <a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</p>
+<p><tt class="docutils literal"><span class="pre">--section=&lt;string&gt;</span></tt> : [Optional] The section of tags to check.  Used when an input file contains many sections of tags, and you only want to check one.  When the input file contains multiple sections, and you do not pass this option, the program will check all sections.  This may cause slow responses.</p>
+<p><tt class="docutils literal"><span class="pre">--left-primer=&lt;string&gt;</span></tt> : The left primer sequence to tag.</p>
+<p><tt class="docutils literal"><span class="pre">--right-primer=&lt;string&gt;</span></tt> : The right primer sequence to tag.</p>
+<p><tt class="docutils literal"><span class="pre">--output=&lt;string&gt;</span></tt> : [Optional] The path and name of an output file.  If you do not pass <tt class="docutils literal"><span class="pre">--keep-database</span></tt>, this will be the path to the output file in CSV format.  If you do pass <tt class="docutils literal"><span class="pre">--keep-database</span></tt>, this will become the name of and path to your database, to which the program will append <tt class="docutils literal"><span class="pre">.sqlite</span></tt>.</p>
+<p><tt class="docutils literal"><span class="pre">--pigtail</span></tt> : Add a &#8220;pigtail&#8221; to each tagged primer sequence.</p>
+<p><tt class="docutils literal"><span class="pre">--pigtail-sequence=&lt;string&gt;</span></tt> : The pigtail sequence to add.  Defaults to <tt class="docutils literal"><span class="pre">GTTT</span></tt> <a class="reference internal" href="references.html#brownstein-1996">[Brownstein:1996]</a>.</p>
+<p><tt class="docutils literal"><span class="pre">--sort=&lt;string&gt;</span></tt> : Comma-separated list of columns on which to sort the contents of <tt class="docutils literal"><span class="pre">--output=&lt;FILE&gt;</span></tt>, if passed as an option.  The string should be formatted as above:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="o">--</span><span class="n">sort</span><span class="o">=</span><span class="n">pair_hairpin_either</span><span class="p">,</span><span class="n">pair_penalty</span><span class="p">,</span><span class="n">cycles</span>
+</pre></div>
+</div>
+<p>and valid options include one or more of the following:</p>
+<div class="highlight-none"><div class="highlight"><pre>id, unmodified, tag, cycles, left_tag_common, left_tag, left_sequence,
+left_tm, left_gc, left_self_end, left_self_any, left_hairpin,
+left_end_stability, left_penalty, left_problems, right_tag_common,
+right_tag, right_sequence, right_tm, right_gc, right_self_end,
+right_self_any, right_hairpin, right_end_stability, right_penalty,
+right_problems, pair_compl_end, pair_compl_any, pair_hairpin_either,
+pair_penalty
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">--remove-common</span></tt> : Remove common bases btw. pigtail and tag</p>
+<p><tt class="docutils literal"><span class="pre">--keep-database</span></tt> : Keep the sqlite database produced in the current directory.  Useful for sorting and selecting large groups of tagged primers.</p>
+</div>
+<div class="section" id="querying-the-database">
+<h3>Querying the database<a class="headerlink" href="#querying-the-database" title="Permalink to this headline">¶</a></h3>
+<p>Here follows a (very) brief introduction to <a class="reference external" href="http://www.sqlite.org">sqlite</a> and constructing queries of the output data.  For more information, see <a class="reference external" href="http://www.sqlite.org/sqlite.html">sqlite.org</a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Below, I have used the convention, in <a class="reference external" href="http://en.wikipedia.org/wiki/SQL">Structured Query Language (SQL)</a>, of capitalizing statements (e.g. SELECT, ORDER BY, LIMIT, ASC, etc.).  This is <strong>not</strong> required to construct a valid query.</p>
+</div>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># start sqlite from your command-line interface</span>
+
+<span class="o">[</span>~<span class="o">]</span> sqlite my_very_first_database.sqlite
+SQLite version 3.7.3
+Enter <span class="s2">&quot;.help&quot;</span> <span class="k">for </span>instructions
+Enter SQL statements terminated with a <span class="s2">&quot;;&quot;</span>
+</pre></div>
+</div>
+<div class="highlight-sql"><div class="highlight"><pre><span class="cm">/* look at help, then set some helpful output parameters.  Feel free</span>
+<span class="cm">to play around with options here. */</span>
+
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="n">help</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="k">mode</span> <span class="k">column</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="n">headers</span> <span class="k">on</span>
+<span class="cm">/* see what tables we have */</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="n">tables</span>
+<span class="n">primers</span>
+<span class="cm">/* show the columns in `primers` table */</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="k">schema</span> <span class="n">primers</span>
+</pre></div>
+</div>
+<p>Now that we know what columns are in the <tt class="docutils literal"><span class="pre">primers</span></tt> table, we can query data from the database:</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="cm">/* get the first 5 primers in the table */</span>
+
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">left_sequence</span><span class="p">,</span> <span class="n">right_sequence</span><span class="p">,</span>
+   <span class="p">...</span><span class="o">&gt;</span> <span class="n">pair_penalty</span> <span class="k">AS</span> <span class="n">pp</span> <span class="k">FROM</span> <span class="n">primers</span> <span class="k">LIMIT</span> <span class="mi">5</span><span class="p">;</span>
+
+<span class="n">id</span>          <span class="n">tag</span>         <span class="n">left_sequence</span>           <span class="n">right_sequence</span>        <span class="n">pp</span>
+<span class="c1">----------  ----------  ----------------------  --------------------  ----------</span>
+<span class="mi">1</span>                       <span class="n">GTTATGCATGAACGTAATGCTC</span>  <span class="n">CGCATGGTGGATTCACAATC</span>  <span class="mi">6</span><span class="p">.</span><span class="mi">777033</span>
+<span class="mi">2</span>           <span class="n">TTCTCCTTCA</span>  <span class="n">GTTTCTCCTTCAGTTATGCATG</span>  <span class="n">GTTTCTCCTTCACGCATGGT</span>  <span class="mi">41</span><span class="p">.</span><span class="mi">657069</span>
+<span class="mi">3</span>           <span class="n">ACCTTACCTT</span>  <span class="n">GTTTACCTTACCTTGTTATGCA</span>  <span class="n">GTTTACCTTACCTTCGCATG</span>  <span class="mi">45</span><span class="p">.</span><span class="mi">328737</span>
+<span class="mi">4</span>           <span class="n">CATTCCTCTA</span>  <span class="n">GTTTCATTCCTCTAGTTATGCA</span>  <span class="n">GTTTCATTCCTCTACGCATG</span>  <span class="mi">45</span><span class="p">.</span><span class="mi">076019</span>
+<span class="mi">5</span>           <span class="n">TGTCATTCCT</span>  <span class="n">GTTTGTCATTCCTGTTATGCAT</span>  <span class="n">GTTTGTCATTCCTCGCATGG</span>  <span class="mi">44</span><span class="p">.</span><span class="mi">361076</span>
+</pre></div>
+</div>
+<p>You may notice the primer having <tt class="docutils literal"><span class="pre">id</span> <span class="pre">=</span> <span class="pre">1</span></tt> has no tag.  That is because this is the <strong>untagged</strong> primer sequence, which we include for the sake of comparison with derived metrics for each tagged primer.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">sqlite will often truncate primer sequences in <tt class="docutils literal"><span class="pre">.mode</span> <span class="pre">column</span></tt> because of the default column width settings (<tt class="docutils literal"><span class="pre">.width</span></tt>).  You should notice, above, that the values in <tt class="docutils literal"><span class="pre">left_sequence</span></tt> and <tt class="docutils literal"><span class="pre">right_sequence</span></tt> are <strong>not</strong> the entire primer sequences - <em>they have been truncated</em>.  One way to fix this problem is to make sure you run <tt class="docutils literal"><span class="pre">.mode</span> <span class="pre">csv</span></tt> before you copy and paste <strong>any</strong> primer sequences for ordering.  Another way to fix that problem is to write the query results to a file, after switching to CSV mode.  See below for examples.</p>
+</div>
+<p>Now, let&#8217;s get some more primer sequences...</p>
+<p>In the first example, we are going to grab two primer sequences (for the sake of minimal output).  However, before we grab those two, we are going to:</p>
+<ol class="arabic simple">
+<li>ignore those primers with hairpins <tt class="docutils literal"><span class="pre">pair_hairpin_either</span> <span class="pre">=</span> <span class="pre">0</span></tt>.  Primers with potential hairpins are assigned a value of <tt class="docutils literal"><span class="pre">1</span></tt> (TRUE) in this column.  Primers without hairpins are assigned a <tt class="docutils literal"><span class="pre">0</span></tt> (FALSE).</li>
+<li>sort on <tt class="docutils literal"><span class="pre">pair_penalty</span></tt> (this is the <tt class="docutils literal"><span class="pre">ORDER</span> <span class="pre">BY</span> <span class="pre">pair_penalty</span> <span class="pre">ASC</span></tt> portion of the query).  <tt class="docutils literal"><span class="pre">pair_penalty</span></tt> is a bad thing, and as the value for this column gets higher, the primers are &#8220;worse&#8221;.  So, we want primers with the lowest <tt class="docutils literal"><span class="pre">pair_penalty</span></tt> possible - thus we sort on this column, and grab those primers within minimal values for <tt class="docutils literal"><span class="pre">pair_penalty</span></tt>.</li>
+</ol>
+<div class="highlight-sql"><div class="highlight"><pre><span class="cm">/* select 2 primer sequences from table where there are no hairpins</span>
+<span class="cm">and with the lowest total penalties (i,e. from best to worst) */</span>
+
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">left_sequence</span><span class="p">,</span> <span class="n">right_sequence</span> <span class="k">FROM</span> <span class="n">primers</span> <span class="k">WHERE</span>
+   <span class="p">...</span><span class="o">&gt;</span> <span class="n">pair_hairpin_either</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">pair_penalty</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">2</span><span class="p">;</span>
+
+<span class="n">id</span>          <span class="n">tag</span>         <span class="n">left_sequence</span>                         <span class="n">right_sequence</span>
+<span class="c1">----------  ----------  ------------------------------------  ---------------------------------</span>
+<span class="mi">35</span>          <span class="n">CCATATGAAC</span>  <span class="n">GTTTCCATATGAACGTTATGCATGAACGTAATGCTC</span>  <span class="n">GTTTCCATATGAACGCATGGTGGATTCACAATC</span>
+<span class="mi">36</span>          <span class="n">CGGAACTTAT</span>  <span class="n">GTTTCGGAACTTATGTTATGCATGAACGTAATGCTC</span>  <span class="n">GTTTCGGAACTTATCGCATGGTGGATTCACAAT</span>
+</pre></div>
+</div>
+<p>Now, we&#8217;re just going to grab some random primers that do not have hairpins for testing.  After testing, we may remove the
+<tt class="docutils literal"><span class="pre">ORDER</span> <span class="pre">BY</span> <span class="pre">RANDOM()</span> <span class="pre">LIMIT</span> <span class="pre">5</span></tt> portion of the query to grab all those primers with no hairpins (e.g. for ordering):</p>
+<div class="highlight-sql"><div class="highlight"><pre><span class="cm">/* select a random set of 5 primers having no hairpins */</span>
+
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">left_sequence</span><span class="p">,</span> <span class="n">right_sequence</span> <span class="k">FROM</span> <span class="n">primers</span> <span class="k">WHERE</span>
+   <span class="p">...</span><span class="o">&gt;</span> <span class="n">pair_hairpin_either</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">RANDOM</span><span class="p">()</span> <span class="k">LIMIT</span> <span class="mi">5</span><span class="p">;</span>
+
+<span class="n">id</span>          <span class="n">tag</span>         <span class="n">left_sequence</span>                         <span class="n">right_sequence</span>
+<span class="c1">----------  ----------  ------------------------------------  ---------------------------------</span>
+<span class="mi">35</span>          <span class="n">CCATATGAAC</span>  <span class="n">GTTTCCATATGAACGTTATGCATGAACGTAATGCTC</span>  <span class="n">GTTTCCATATGAACGCATGGTGGATTCACAATC</span>
+<span class="mi">147</span>         <span class="n">CCGGTGGAAT</span>  <span class="n">GTTTCCGGTGGAATGTTATGCATGAACGTAATGCTC</span>  <span class="n">GTTTCCGGTGGAATCGCATGGTGGATTCACAAT</span>
+<span class="mi">146</span>         <span class="n">CCGAACAGTG</span>  <span class="n">GTTTCCGAACAGTGTTATGCATGAACGTAATGCTC</span>   <span class="n">GTTTCCGAACAGTGCGCATGGTGGATTCACAAT</span>
+<span class="mi">151</span>         <span class="n">GGAAGACCTC</span>  <span class="n">GTTTGGAAGACCTCGTTATGCATGAACGTAATGCTC</span>  <span class="n">GTTTGGAAGACCTCGCATGGTGGATTCACAATC</span>
+<span class="mi">36</span>          <span class="n">CGGAACTTAT</span>  <span class="n">GTTTCGGAACTTATGTTATGCATGAACGTAATGCTC</span>  <span class="n">GTTTCGGAACTTATCGCATGGTGGATTCACAAT</span>
+
+<span class="cm">/* Before we order these primers for testing, ensure we have no truncation issues.</span>
+<span class="cm">Set mode to CSV, and re-run query before copying and pasting */</span>
+
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="k">mode</span> <span class="n">csv</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">left_sequence</span><span class="p">,</span> <span class="n">right_sequence</span> <span class="k">FROM</span> <span class="n">primers</span> <span class="k">WHERE</span>
+   <span class="p">...</span><span class="o">&gt;</span> <span class="n">pair_hairpin_either</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">RANDOM</span><span class="p">()</span> <span class="k">LIMIT</span> <span class="mi">5</span><span class="p">;</span>
+
+<span class="n">id</span><span class="p">,</span><span class="n">tag</span><span class="p">,</span><span class="n">left_sequence</span><span class="p">,</span><span class="n">right_sequence</span>
+<span class="mi">133</span><span class="p">,</span><span class="n">GCCTTCAGGA</span><span class="p">,</span><span class="n">GTTTGCCTTCAGGAGTTATGCATGAACGTAATGCTC</span><span class="p">,</span><span class="n">GTTTGCCTTCAGGACGCATGGTGGATTCACAATC</span>
+<span class="mi">36</span><span class="p">,</span><span class="n">CGGAACTTAT</span><span class="p">,</span><span class="n">GTTTCGGAACTTATGTTATGCATGAACGTAATGCTC</span><span class="p">,</span><span class="n">GTTTCGGAACTTATCGCATGGTGGATTCACAATC</span>
+<span class="mi">147</span><span class="p">,</span><span class="n">CCGGTGGAAT</span><span class="p">,</span><span class="n">GTTTCCGGTGGAATGTTATGCATGAACGTAATGCTC</span><span class="p">,</span><span class="n">GTTTCCGGTGGAATCGCATGGTGGATTCACAATC</span>
+<span class="mi">130</span><span class="p">,</span><span class="n">CGTCAAGAAG</span><span class="p">,</span><span class="n">GTTTCGTCAAGAAGTTATGCATGAACGTAATGCTC</span><span class="p">,</span><span class="n">GTTTCGTCAAGAAGCGCATGGTGGATTCACAATC</span>
+<span class="mi">146</span><span class="p">,</span><span class="n">CCGAACAGTG</span><span class="p">,</span><span class="n">GTTTCCGAACAGTGTTATGCATGAACGTAATGCTC</span><span class="p">,</span><span class="n">GTTTCCGAACAGTGCGCATGGTGGATTCACAATC</span>
+
+<span class="cm">/* Or, save these query results to a file */</span>
+
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="k">mode</span> <span class="n">csv</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="k">output</span> <span class="n">my_first_output_file</span><span class="p">.</span><span class="n">csv</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">id</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">left_sequence</span><span class="p">,</span> <span class="n">right_sequence</span> <span class="k">FROM</span> <span class="n">primers</span> <span class="k">WHERE</span>
+   <span class="p">...</span><span class="o">&gt;</span> <span class="n">pair_hairpin_either</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">RANDOM</span><span class="p">()</span> <span class="k">LIMIT</span> <span class="mi">5</span><span class="p">;</span>
+<span class="n">sqlite</span><span class="o">&gt;</span> <span class="p">.</span><span class="n">quit</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Using edit metric sequence tags</a><ul>
+<li><a class="reference internal" href="#adding-sequence-tags-to-sequencing-adapters">Adding sequence tags to sequencing adapters</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#adding-sequence-tags-to-pcr-primers">Adding sequence tags to PCR primers</a><ul>
+<li><a class="reference internal" href="#id1">Options</a></li>
+<li><a class="reference internal" href="#querying-the-database">Querying the database</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="validation.html" title="previous chapter">Validating edit metric tags</a></li>
+      <li>Next: <a href="formatting.html" title="next chapter">Input file formatting</a></li>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/using.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2011, Brant Faircloth.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+    </div>
+  </body>
+</html>

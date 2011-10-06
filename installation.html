@@ -1,0 +1,141 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; edittag v0.5.0 documentation</title>
+    <link rel="stylesheet" href="static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="edittag v0.5.0 documentation" href="index.html" />
+    <link rel="next" title="Designing edit metric tags" href="design.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="static/small_flask.css" type= "text/css" rel="stylesheet" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="design.html" title="Designing edit metric tags"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">edittag v0.5.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="easy-install">
+<h2>easy_install<a class="headerlink" href="#easy-install" title="Permalink to this headline">¶</a></h2>
+<p>This is one of the easiest options to get up and running quickly:</p>
+<div class="highlight-python"><pre>easy_install edittag</pre>
+</div>
+</div>
+<div class="section" id="tar-gz-format">
+<h2>tar.gz format<a class="headerlink" href="#tar-gz-format" title="Permalink to this headline">¶</a></h2>
+<p>You can install edittag from tar.gz archive:</p>
+<div class="highlight-python"><pre>tar -xzf edittag-0.5.tar.gz
+cd edittag-0.5/
+python setup.py build
+python setup.py test
+python setup.py install</pre>
+</div>
+</div>
+<div class="section" id="zip-format">
+<h2>zip format<a class="headerlink" href="#zip-format" title="Permalink to this headline">¶</a></h2>
+<p>Similar to tar.gz:</p>
+<div class="highlight-python"><pre>unzip edittag-0.5.zip
+cd edittag-0.5/
+python setup.py build
+python setup.py test
+python setup.py install</pre>
+</div>
+</div>
+<div class="section" id="amazon-machine-instance-ami">
+<h2>Amazon Machine Instance (AMI)<a class="headerlink" href="#amazon-machine-instance-ami" title="Permalink to this headline">¶</a></h2>
+<p>To provide a static environment for testing and running <em>edittag</em> and to enable users to easily run <em>edittag</em> on a multicore machine, we provide an Amazon Machine Instance (AMI) with all dependencies installed that is particularly useful when generating large (≥ 8 base pair) edit metric tag sets.  We maintain this AMI, to which we have installed several other packages that may be useful (more info):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># code here</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#easy-install">easy_install</a></li>
+<li><a class="reference internal" href="#tar-gz-format">tar.gz format</a></li>
+<li><a class="reference internal" href="#zip-format">zip format</a></li>
+<li><a class="reference internal" href="#amazon-machine-instance-ami">Amazon Machine Instance (AMI)</a></li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="design.html" title="next chapter">Designing edit metric tags</a></li>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/installation.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2011, Brant Faircloth.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+    </div>
+  </body>
+</html>
