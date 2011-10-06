@@ -48,8 +48,9 @@ primer3_config somewhere, in the same directory, within your path (here,
 I use /usr/local/bin, because it is usually already in your $PATH::
 
     wget https://github.com/faircloth-lab/mod-primer3/zipball/v2.2.3
-    tar -xzvf v2.2.3
-    cd v2.2.3/src && make
+    unzip v2.2.3
+    rm v2.2.3
+    cd faircloth-lab-mod-primer3-*/src && make
     cp primer3_{config,bin} /usr/local/bin/
 
 .. _edittag: https://github.com/faircloth-lab/edittag/zipball/v1.0rc1
