@@ -1,7 +1,7 @@
 .DS_Store
 *.tmproj
 *.pyc
-_build
-dist/
-edittag.egg-info/
+dist
+*.egg-info
 build
+html
