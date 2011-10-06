@@ -4,4 +4,4 @@
 dist
 *.egg-info
 build
-html
+myhtmldocs

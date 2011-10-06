@@ -218,3 +218,5 @@ man_pages = [
     ('index', 'edittag', u'edittag Documentation',
      [u'Brant Faircloth'], 1)
 ]
+
+extensions = [ "sphinxtogithub" ]
