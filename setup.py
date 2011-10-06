@@ -9,8 +9,8 @@ if __name__ == '__main__':
         version="1.0",
         description="Design and check sets of edit metric sequence tags.",
         author="Brant Faircloth",
-        author_email="brant.faircloth+edittag@gmail.com ",
-        url="http://faircloth-lab.github.com/edittag/",
+        author_email="brant.faircloth+edittag@gmail.com",
+        url="http://github.com/faircloth-lab/edittag/",
         license="http://www.opensource.org/licenses/BSD-3-Clause",
         classifiers=[
             'Development Status :: 4 - Beta',
@@ -22,12 +22,7 @@ if __name__ == '__main__':
             'Topic :: Scientific/Engineering :: Bio-Informatics',
              ],
         requires=['numpy(>=1.3)',],
-        long_description=open('README.txt').read(),
-        package_data = {
-                # If any package contains *.txt or *.rst files, include them:
-                '': ['*.txt', '*.rst'],
-                'edittag': ['tests/test-data/*.txt'],
-            },
+        long_description=open('README.rst').read(),
         packages=['edittag',
                 'edittag.tests',
                 'edittag.primer3'
@@ -39,6 +34,4 @@ if __name__ == '__main__':
                 'bin/get_tag_flows_for_454.py',
                 'bin/validate_edit_metric_tags.py'
                 ],
-
-        
         )
