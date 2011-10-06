@@ -11,10 +11,10 @@ At a more general level, *edittag* contains tools facilitating high levels of pl
 
 Using *edittag*, we have generated several large sets of edit metric sequence tags from four to 10 nucleotides in length and ranging from edit distance three to nine.  We provide these pre-generated tag sets under a `Creative Commons Attribution 3.0 United States <http://creativecommons.org/licenses/by/3.0/us/>`_ license in several forms:
 
-* `CSV file <https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv>`_
-* `TXT file <https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt>`_
-* `MS Excel xls file <https://github.com/downloads/BadDNA/edittag/edit_metric_tags.xls.zip>`_
-* `sqlite database <https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip>`_
+* `CSV file <https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.csv>`_
+* `TXT file <https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.txt>`_
+* `MS Excel xls file <https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.xls.zip>`_
+* `sqlite database <https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.sqlite.zip>`_
 
 Features
 ========
@@ -49,6 +49,6 @@ Optional
 --------
 
 * `py-levenshtein <http://pylevenshtein.googlecode.com/>`_
-* `mod-primer3 <https://github.com/BadDNA/mod-primer3>`_
+* `mod-primer3 <https://github.com/baddna/mod-primer3>`_
 
 Although optional, we **strongly** recommend installation of py-levenshtein, which is a C-module for python that speeds computation of the Levenshtein distance between strings.
