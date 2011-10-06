@@ -57,4 +57,5 @@ I use /usr/local/bin, because it is usually already in your $PATH::
 .. _python-levenshtein: https://github.com/faircloth-lab/python-levenshtein/zipball/v0.10.2
 .. _numpy: http://www.scipy.org/Download
 .. _mod-primer3: https://github.com/faircloth-lab/mod-primer3
+.. _source: https://github.com/faircloth-lab/mod-primer3
 .. _nose: http://code.google.com/p/python-nose/
