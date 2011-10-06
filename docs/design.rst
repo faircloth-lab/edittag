@@ -83,8 +83,8 @@ all 10).  You can rescan a sequence tag file, outputting those tags
 where the first six nucleotides are edit distance three from one another
 using::
 
-    python make_levenshtein_tags.py --edit-distance=3 --min-and-greater \
-    --rescan=FILE --rescan-length=6
+    python design_edit_metric_tags.py --rescane=FILE --edit-distance=3 \
+        --min-and-greater --rescan-length=6
 
 --rescan=<FILE>  Path to the input file, containing edit metric sequence
   tags, that you wish you rescan.
