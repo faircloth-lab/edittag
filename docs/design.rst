@@ -38,24 +38,25 @@ Tag design options
 --processors=<int>  The number of computing cores/processors to use.
   This defaults to max(cores) - 2.
 
---no-polybase
-  Filter those tags having greater than two adjacent,
-  identical bases. Homopolymer bases are problematic on certain
-  sequencing platforms, thus it is useful to avoid homopolymer runs longer
-  than three.
-
 --gc  Filter those tags having 40 < GC % < 60.
 
 --comp  Filter those tags that are perfect self-complements.  Generally,
   this option removes tags likely to form hairpins.
-
---hamming   Use Hamming distance in place of edit (Levenshtein) distance.
 
 --min-and-greater  Return all tags at the minimum edit distance
   requested, and subsets of those tags falling within consecutively
   greater edit distance categories.  Thus, if you design 8 nucleotide,
   edit distance 3 tags and pass this option, the program will return all
   subsets of these tags having edit distances in the ``set([3,4,5,6,7])``.
+
+--no-polybases  Filter those tags having greater than two adjacent,
+  identical bases. Homopolymer bases are problematic on certain
+  sequencing platforms, thus it is useful to avoid homopolymer runs longer
+  than three.
+
+--hamming  Use Hamming distance in place of edit (Levenshtein) distance.
+
+
 
 .. _tag-rescanning:
 
