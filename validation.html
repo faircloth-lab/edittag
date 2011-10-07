@@ -22,7 +22,7 @@
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="edittag v0.5.0 documentation" href="index.html" />
-    <link rel="next" title="Using edit metric sequence tags" href="using.html" />
+    <link rel="next" title="Input file formatting" href="formatting.html" />
     <link rel="prev" title="Designing edit metric tags" href="design.html" />
    
   
@@ -37,7 +37,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="using.html" title="Using edit metric sequence tags"
+          <a href="formatting.html" title="Input file formatting"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="design.html" title="Designing edit metric tags"
@@ -53,17 +53,68 @@
             
   <div class="section" id="validating-edit-metric-tags">
 <h1>Validating edit metric tags<a class="headerlink" href="#validating-edit-metric-tags" title="Permalink to this headline">¶</a></h1>
-<p>Validating a set of sequence tags takes an easily formatted file as input and returns the edit distances between sets of tags within the input.  You can validate a set of sequence tags by invoking <tt class="docutils literal"><span class="pre">validate_edit_metric_tags.py</span></tt> as follows:</p>
-<div class="highlight-python"><pre>python validate_edit_metric_tags.py --input test-data/edit_metric_tags.txt \
-    --section '5nt ed3'</pre>
+<p>Validating a set of sequence tags takes an easily formatted file as input and
+returns the edit distances between sets of tags within the input.  You can
+validate a set of sequence tags by invoking <tt class="docutils literal"><span class="pre">validate_edit_metric_tags.py</span></tt> as
+follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python validate_edit_metric_tags.py <span class="se">\</span>
+    --input <span class="nb">test</span>-data/edit_metric_tags.txt <span class="se">\</span>
+    --section <span class="s1">&#39;5nt ed3&#39;</span>
+</pre></div>
 </div>
 <div class="section" id="options">
 <h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
-<p><tt class="docutils literal"><span class="pre">--input=&lt;FILE&gt;</span></tt> : The input file to check.  The format must follow guidelines in <a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</p>
-<p><tt class="docutils literal"><span class="pre">--section=&lt;string&gt;</span></tt> : The section of tags to check.  Used when an input file contains many sections of tags, and you only want to check one.  When the input file contains multiple sections, and you do not pass this option, the program will check all sections.  This may cause slow responses.</p>
-<p><tt class="docutils literal"><span class="pre">--minimums</span></tt> : Default behavior.  Computes and returns the minimum edit distance in each set of tags.</p>
-<p><tt class="docutils literal"><span class="pre">--all-distances</span></tt> : Compute and return minimum, mode, and maximum edit distance in each set of tags.  Also returns a table denoting the distribution of sequence tags into edit distance categories.</p>
-<p><tt class="docutils literal"><span class="pre">--verbose</span></tt> : When used with <tt class="docutils literal"><span class="pre">--minimums</span></tt>, returns the pairwise comparisons of tags having the minimum edit distance from one another.  When used with <tt class="docutils literal"><span class="pre">--all-distances</span></tt>, returns the pairwise comparisons of tags having any edit distance.  When used alone, defaults to returning the pairwise comparisons of tags having the minimum edit distance.</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--input=<var>&lt;INPUT&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The input file to check.  The format must follow guidelines in
+<a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--section=<var>&lt;string&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The section of tags to check.  Used when an input file
+contains many sections of tags, and you only want to check one.  When the input
+file contains multiple sections, and you do not pass this option, the program
+will check all sections.  This may cause slow processing.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--minimums</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Default behavior. Computes and returns the minimum edit distance
+in each set of tags.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--all-distances</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Compute and return minimum, mode, and maximum edit distance in
+each set of tags.  Also returns a table denoting the distribution of sequence
+tags into edit distance categories.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--hamming</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Validate an input file of tags for their Hamming distance from each
+other.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--verbose</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>When used with <tt class="docutils literal"><span class="pre">--minimums</span></tt>, returns the pairwise comparisons of
+tags having the minimum edit distance from one another.  When used with
+<tt class="docutils literal"><span class="pre">--all-distances</span></tt>, returns the pairwise comparisons of tags having any edit
+distance.  When used alone, defaults to returning the pairwise comparisons of
+tags having the minimum edit distance.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>If you would like to save the output, you can send it to a file using redirection:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python validate_edit_metric_tags.py <span class="se">\</span>
+    --input <span class="nb">test</span>-data/edit_metric_tags.txt <span class="se">\</span>
+    --section <span class="s1">&#39;5nt ed3&#39;</span> &gt; my_output_file.txt
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -77,6 +128,7 @@
   <ul>
 <li><a class="reference internal" href="#">Validating edit metric tags</a><ul>
 <li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
 </ul>
 </li>
 </ul>
@@ -84,7 +136,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="design.html" title="previous chapter">Designing edit metric tags</a></li>
-      <li>Next: <a href="using.html" title="next chapter">Using edit metric sequence tags</a></li>
+      <li>Next: <a href="formatting.html" title="next chapter">Input file formatting</a></li>
   </ul></li>
 </ul>
   <h3>This Page</h3>

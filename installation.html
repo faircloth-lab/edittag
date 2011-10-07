@@ -53,36 +53,48 @@
             
   <div class="section" id="installation">
 <span id="id1"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="easy-install">
-<h2>easy_install<a class="headerlink" href="#easy-install" title="Permalink to this headline">¶</a></h2>
-<p>This is one of the easiest options to get up and running quickly:</p>
-<div class="highlight-python"><pre>easy_install edittag</pre>
+<p><a class="reference external" href="https://github.com/faircloth-lab/edittag/zipball/v1.0rc1">edittag</a> has several dependencies.  At a minimum, you must install
+<a class="reference external" href="http://www.scipy.org/Download">numpy</a>.  Optional installs include:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/faircloth-lab/python-levenshtein/zipball/v0.10.2">python-levenshtein</a></li>
+<li><a class="reference external" href="https://github.com/faircloth-lab/mod-primer3">mod-primer3</a></li>
+<li><a class="reference external" href="http://code.google.com/p/python-nose/">nose</a></li>
+</ul>
+<div class="section" id="installing-numpy">
+<h2>Installing numpy<a class="headerlink" href="#installing-numpy" title="Permalink to this headline">¶</a></h2>
+<p>You first need to install <a class="reference external" href="http://www.scipy.org/Download">numpy</a>.  Barring platform-specific options, you can
+accomplish this by running:</p>
+<div class="highlight-python"><pre>easy_install numpy</pre>
 </div>
+<p>Sometimes on OSX, this is problematic.  There is a <a class="reference external" href="http://sourceforge.net/projects/numpy/files/NumPy/1.6.1/numpy-1.6.1-py2.6-python.org-macosx10.3.dmg/download">binary installer</a>
+that you can use in this case.</p>
 </div>
-<div class="section" id="tar-gz-format">
-<h2>tar.gz format<a class="headerlink" href="#tar-gz-format" title="Permalink to this headline">¶</a></h2>
-<p>You can install edittag from tar.gz archive:</p>
-<div class="highlight-python"><pre>tar -xzf edittag-0.5.tar.gz
-cd edittag-0.5/
-python setup.py build
-python setup.py test
-python setup.py install</pre>
+<div class="section" id="installing-python-levenshtein-and-edittag">
+<h2>Installing python-levenshtein and edittag<a class="headerlink" href="#installing-python-levenshtein-and-edittag" title="Permalink to this headline">¶</a></h2>
+<p>The easiest option to get up and running quickly is to use easy_install:</p>
+<div class="highlight-bash"><div class="highlight"><pre>easy_install python-Levenshtein
+easy_install edittag
+</pre></div>
 </div>
+<p>You can also install both by download the tarballs (<a class="reference external" href="https://github.com/faircloth-lab/edittag/zipball/v1.0rc1">edittag</a> and
+<a class="reference external" href="https://github.com/faircloth-lab/python-levenshtein/zipball/v0.10.2">python-levenshtein</a>) and running:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python setup.py install
+</pre></div>
 </div>
-<div class="section" id="zip-format">
-<h2>zip format<a class="headerlink" href="#zip-format" title="Permalink to this headline">¶</a></h2>
-<p>Similar to tar.gz:</p>
-<div class="highlight-python"><pre>unzip edittag-0.5.zip
-cd edittag-0.5/
-python setup.py build
-python setup.py test
-python setup.py install</pre>
+<p>In the unzipped directory of each package.</p>
 </div>
-</div>
-<div class="section" id="amazon-machine-instance-ami">
-<h2>Amazon Machine Instance (AMI)<a class="headerlink" href="#amazon-machine-instance-ami" title="Permalink to this headline">¶</a></h2>
-<p>To provide a static environment for testing and running <em>edittag</em> and to enable users to easily run <em>edittag</em> on a multicore machine, we provide an Amazon Machine Instance (AMI) with all dependencies installed that is particularly useful when generating large (≥ 8 base pair) edit metric tag sets.  We maintain this AMI, to which we have installed several other packages that may be useful (more info):</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># code here</span>
+<div class="section" id="installing-mod-primer3">
+<span id="mod-primer-installation"></span><h2>Installing mod-primer3<a class="headerlink" href="#installing-mod-primer3" title="Permalink to this headline">¶</a></h2>
+<p>If you would like to design primers with integrated tags, you need to
+build and install a modified version of the primer3 source code.  To do
+that, download the <a class="reference external" href="https://github.com/faircloth-lab/mod-primer3">source</a>, build it, and place both primer3_long and
+primer3_config somewhere, in the same directory, within your path (here,
+I use /usr/local/bin, because it is usually already in your $PATH:</p>
+<div class="highlight-bash"><div class="highlight"><pre>wget https://github.com/faircloth-lab/mod-primer3/zipball/v2.2.3
+unzip v2.2.3
+rm v2.2.3
+<span class="nb">cd </span>faircloth-lab-mod-primer3-*/src <span class="o">&amp;&amp;</span> make
+cp primer3_<span class="o">{</span>config,bin<span class="o">}</span> /usr/local/bin/
 </pre></div>
 </div>
 </div>
@@ -97,10 +109,9 @@ python setup.py install</pre>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Installation</a><ul>
-<li><a class="reference internal" href="#easy-install">easy_install</a></li>
-<li><a class="reference internal" href="#tar-gz-format">tar.gz format</a></li>
-<li><a class="reference internal" href="#zip-format">zip format</a></li>
-<li><a class="reference internal" href="#amazon-machine-instance-ami">Amazon Machine Instance (AMI)</a></li>
+<li><a class="reference internal" href="#installing-numpy">Installing numpy</a></li>
+<li><a class="reference internal" href="#installing-python-levenshtein-and-edittag">Installing python-levenshtein and edittag</a></li>
+<li><a class="reference internal" href="#installing-mod-primer3">Installing mod-primer3</a></li>
 </ul>
 </li>
 </ul>

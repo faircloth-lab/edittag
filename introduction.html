@@ -55,35 +55,45 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="purpose">
 <h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
-<p><em>edittag</em> is a suite of programs for designing, checking, and using sets of sequence tags that conform to the edit metric.  Here, we define these sets as the groups of sequence tags of a particular length where all tags within the set are <strong>at least</strong> the select edit (Levenshtein) distance <a class="reference internal" href="references.html#levenshtein-1966">[Levenshtein:1966]</a>, <a class="reference internal" href="references.html#gusfield-1999">[Gusfield:1999]</a> from one another.</p>
-<p>At a more general level, <em>edittag</em> contains tools facilitating high levels of plexity during massively parallel DNA sequencing runs.</p>
-<p>Using <em>edittag</em>, we have generated several large sets of edit metric sequence tags from four to 10 nucleotides in length and ranging from edit distance three to nine.  We provide these pre-generated tag sets under a <a class="reference external" href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States</a> license in several forms:</p>
+<p><em>edittag</em> is a suite of programs for designing, checking, and using sets
+of sequence tags that conform to the edit metric.  Here, we define these
+sets as the groups of sequence tags of a particular length where all
+tags within the set are <strong>at least</strong> the select edit (Levenshtein)
+distance <a class="reference internal" href="references.html#levenshtein-1966">[Levenshtein:1966]</a>, <a class="reference internal" href="references.html#gusfield-1999">[Gusfield:1999]</a> from one another.</p>
+<p>At a more general level, <em>edittag</em> contains tools facilitating high
+levels of plexity during massively parallel DNA sequencing runs.</p>
+<p>Using <em>edittag</em>, we have generated several large sets of edit metric
+sequence tags from four to 10 nucleotides in length and ranging from
+edit distance three to nine.  We provide these pre-generated tag sets
+under a <a class="reference external" href="http://creativecommons.org/licenses/by/3.0/us/">Creative Commons Attribution 3.0 United States</a> license in several
+forms:</p>
 <ul class="simple">
-<li><a class="reference external" href="https://github.com/downloads/BadDNA/edittag/edit_metric_tags.csv">CSV file</a></li>
-<li><a class="reference external" href="https://github.com/downloads/BadDNA/edittag/edit_metric_tags.txt">TXT file</a></li>
-<li><a class="reference external" href="https://github.com/downloads/BadDNA/edittag/edit_metric_tags.xls.zip">MS Excel xls file</a></li>
-<li><a class="reference external" href="https://github.com/downloads/BadDNA/edittag/edit_metric_tags.sqlite.zip">sqlite database</a></li>
+<li><a class="reference external" href="https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.csv">CSV file</a></li>
+<li><a class="reference external" href="https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.txt">TXT file</a></li>
+<li><a class="reference external" href="https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.xls.zip">MS Excel xls file</a></li>
+<li><a class="reference external" href="https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.sqlite.zip">sqlite database</a></li>
 </ul>
 </div>
 <div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><em>edittag</em> correctly designs sequence tag sets conforming to the edit metric</li>
-<li><em>edittag</em> contains a method to test designed sets (from <em>edittag</em> or elsewhere) for conformance to the edit metric (and/or the Hamming distance <a class="reference internal" href="references.html#hamming-1950">[Hamming:1950]</a> between sequence tags)</li>
-<li><em>edittag</em> provides several programs for integrating sequence tags to primers and sequencing adapters</li>
-<li><em>edittag</em> uses multiprocessing to speed computation, particularly when designing sequence tags of arbitrary length</li>
-<li><em>edittag</em> provides unittests of critical code (edit distance computation) and output to ensure underlying methods return expected results</li>
+<li><em>edittag</em> contains a method to test designed sets (from <em>edittag</em> or
+elsewhere) for conformance to the edit metric (and/or the Hamming
+distance <a class="reference internal" href="references.html#hamming-1950">[Hamming:1950]</a> between sequence tags)</li>
+<li><em>edittag</em> provides several programs for integrating sequence tags to
+primers and sequencing adapters</li>
+<li><em>edittag</em> uses multiprocessing to speed computation, particularly when
+designing sequence tags of arbitrary length</li>
+<li><em>edittag</em> provides unittests of critical code (edit distance
+computation) and output to ensure underlying methods return expected
+results</li>
 </ul>
 </div>
 <div class="section" id="availability">
 <h2>Availability<a class="headerlink" href="#availability" title="Permalink to this headline">¶</a></h2>
-<p>We provide several methods of installing eddittag, see <a class="reference internal" href="installation.html#installation"><em>Installation</em></a> for additional details:</p>
-<ul class="simple">
-<li>tar.gz</li>
-<li>zip</li>
-<li>git repository</li>
-<li>Amazon EC2 AMI # YYYYYY</li>
-</ul>
+<p>We provide several methods of installing eddittag, see
+<a class="reference internal" href="installation.html#installation"><em>Installation</em></a> for additional details:</p>
 </div>
 <div class="section" id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
@@ -94,10 +104,12 @@
 <div class="section" id="optional">
 <h3>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li><a class="reference external" href="http://pylevenshtein.googlecode.com/">py-levenshtein</a></li>
-<li><a class="reference external" href="https://github.com/BadDNA/mod-primer3">mod-primer3</a></li>
+<li><a class="reference external" href="http://pypi.python.org/pypi/python-Levenshtein/">py-levenshtein</a></li>
+<li><a class="reference external" href="https://github.com/faircloth-lab/mod-primer3">mod-primer3</a></li>
 </ul>
-<p>Although optional, we <strong>strongly</strong> recommend installation of py-levenshtein, which is a C-module for python that speeds computation of the Levenshtein distance between strings.</p>
+<p>Although optional, we <strong>strongly</strong> recommend installation of
+py-levenshtein, which is a C-module for python that speeds computation
+of the Levenshtein distance between strings.</p>
 </div>
 </div>
 </div>

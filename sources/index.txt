@@ -15,8 +15,9 @@ Contents:
    installation
    design
    validation
-   using
    formatting
+   using_adapters
+   using_primers
    helpers
    license
    citation

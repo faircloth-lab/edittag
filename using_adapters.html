@@ -1,0 +1,180 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Adding sequence tags to sequencing adapters &mdash; edittag v0.5.0 documentation</title>
+    <link rel="stylesheet" href="static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="edittag v0.5.0 documentation" href="index.html" />
+    <link rel="next" title="Adding sequence tags to PCR primers" href="using_primers.html" />
+    <link rel="prev" title="Input file formatting" href="formatting.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="static/small_flask.css" type= "text/css" rel="stylesheet" />
+
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="using_primers.html" title="Adding sequence tags to PCR primers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="formatting.html" title="Input file formatting"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">edittag v0.5.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="adding-sequence-tags-to-sequencing-adapters">
+<span id="using-adapters"></span><h1>Adding sequence tags to sequencing adapters<a class="headerlink" href="#adding-sequence-tags-to-sequencing-adapters" title="Permalink to this headline">¶</a></h1>
+<p>We provide an extremely simple program for integrating sequence tags, output by
+<tt class="docutils literal"><span class="pre">design_edit_metric_sequence_tags.py</span></tt>, to sequencing adapters.  This program
+is largely meant for cases where you need to consistently add many sequence
+tags to a single adapter.  The program is invoked as follows and output is sent
+to stdout:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python add_tags_to_adapters.py <span class="se">\</span>
+    --input<span class="o">=</span><span class="nb">test</span>-data/edit_metric_tags.conf
+    --5prime<span class="o">=</span>CAAGCAGAAGACGGCATACGAGA
+    --3prime<span class="o">=</span>TGACTGGAGTTC <span class="se">\</span>
+    --section<span class="o">=</span><span class="s1">&#39;5nt ed3&#39;</span>
+</pre></div>
+</div>
+<div class="section" id="options">
+<h2>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--input=<var>&lt;FILE&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The input file to check.  The format must follow guidelines in
+<a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--5-prime=<var>&lt;string&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The adapter sequence 5&#8217; of the sequence tag.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--3-prime=<var>&lt;string&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The adapter sequence 3&#8217; of the sequence tag.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--section=<var>&lt;string&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The section of tags to apply to the adapter sequence.  Used
+when an input file contains many sections of tags, and you only want to check
+one.  When the input file contains multiple sections, and you do not pass this
+option, the program will output adapters with all the sequence tags in</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--revcomp</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Add the reverse complement of the sequence tag rather than the
+forward complement.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--suppress-orientation</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>Suppress pretty printing of the results to stdout and
+just return the adapter sequences.</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>Results written to stdout have the following appearance.  Notice that the
+integrated tag sequence is converted to lower-case:</p>
+<div class="highlight-none"><div class="highlight"><pre>[4nt ed3]
+    5&#39; - AAAAgtcaGGGG - 3&#39;
+    5&#39; - AAAAaaccGGGG - 3&#39;
+    5&#39; - AAAAacagGGGG - 3&#39;
+    5&#39; - AAAAaggaGGGG - 3&#39;
+    5&#39; - AAAAcctaGGGG - 3&#39;
+    5&#39; - AAAAcgatGGGG - 3&#39;
+    5&#39; - AAAAtgtgGGGG - 3&#39;
+</pre></div>
+</div>
+<p>To write results to an output file, you can just use redirection:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python add_tags_to_adapters.py <span class="se">\</span>
+        --input<span class="o">=</span><span class="nb">test</span>-data/edit_metric_tags.conf
+        --5prime<span class="o">=</span>CAAGCAGAAGACGGCATACGAGA
+        --3prime<span class="o">=</span>TGACTGGAGTTC <span class="se">\</span>
+        --section<span class="o">=</span><span class="s1">&#39;5nt ed3&#39;</span> &gt; my_output_file.txt
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Adding sequence tags to sequencing adapters</a><ul>
+<li><a class="reference internal" href="#options">Options</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="formatting.html" title="previous chapter">Input file formatting</a></li>
+      <li>Next: <a href="using_primers.html" title="next chapter">Adding sequence tags to PCR primers</a></li>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/using_adapters.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2011, Brant Faircloth.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a>.
+    </div>
+  </body>
+</html>

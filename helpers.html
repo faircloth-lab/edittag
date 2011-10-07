@@ -23,7 +23,7 @@
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="edittag v0.5.0 documentation" href="index.html" />
     <link rel="next" title="License" href="license.html" />
-    <link rel="prev" title="Input file formatting" href="formatting.html" />
+    <link rel="prev" title="Adding sequence tags to PCR primers" href="using_primers.html" />
    
   
   <link media="only screen and (max-device-width: 480px)" href="static/small_flask.css" type= "text/css" rel="stylesheet" />
@@ -40,7 +40,7 @@
           <a href="license.html" title="License"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="formatting.html" title="Input file formatting"
+          <a href="using_primers.html" title="Adding sequence tags to PCR primers"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">edittag v0.5.0 documentation</a> &raquo;</li> 
       </ul>
@@ -55,23 +55,56 @@
 <span id="helpers"></span><h1>Additional helper programs<a class="headerlink" href="#additional-helper-programs" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="estimating-the-effects-of-sequencing-error">
 <h2>Estimating the effects of sequencing error<a class="headerlink" href="#estimating-the-effects-of-sequencing-error" title="Permalink to this headline">¶</a></h2>
-<p>We provide a program that we used to generate the simulation results presented in Figure 1 of <a class="reference internal" href="citation.html#faircloth-2011">[Faircloth:2011]</a>.  This program makes the simplifying assumption that sequencing errors are uniformly distributed and that they also follow a Bernoulli process.  Thus one can think of modeling sequencing error across a sequence tag of particular length as a binomial trial.  We use multiprocessing to speed individual runs, such that we can generate thousands of iterations of sequencing runs returning millions of reads.  To invoke the program:</p>
-<div class="highlight-bash"><div class="highlight"><pre>python estimate_sequencing_error_effects.py --read-count<span class="o">=</span>1000000
-    --output<span class="o">=</span>1M_reads_error_5_barcode_8nt_1000_iter.out
-    --barcode-length<span class="o">=</span>8 --iterations<span class="o">=</span>1000 --error-rate<span class="o">=</span>0.05
+<p>We provide a program that we used to generate the simulation results presented
+in Figure 1 of <a class="reference internal" href="citation.html#faircloth-2011">[Faircloth:2011]</a>.  This program makes the simplifying
+assumption that sequencing errors are uniformly distributed and that they also
+follow a Bernoulli process.  Thus one can think of modeling sequencing error
+across a sequence tag of particular length as a binomial trial.  We use
+multiprocessing to speed individual runs, such that we can generate thousands
+of iterations of sequencing runs returning millions of reads.  To invoke the
+program:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python estimate_sequencing_error_effects.py <span class="se">\</span>
+    --read-count<span class="o">=</span>1000000 <span class="se">\</span>
+    --output<span class="o">=</span>1M_reads_error_5_barcode_8nt_1000_iter.out <span class="se">\</span>
+    --barcode-length<span class="o">=</span>8 <span class="se">\</span>
+    --iterations<span class="o">=</span>1000 <span class="se">\</span>
+    --error-rate<span class="o">=</span>0.05
 </pre></div>
 </div>
 <div class="section" id="options">
 <h3>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--read-count=&lt;int&gt;</span></tt> : The read count to simulate.</p>
-<p><tt class="docutils literal"><span class="pre">--error-rate=&lt;float&gt;</span></tt> : The error rate to simulate.</p>
-<p><tt class="docutils literal"><span class="pre">--output=FILE</span></tt> : The path to the output file.</p>
-<p><tt class="docutils literal"><span class="pre">--barcode-length=&lt;int&gt;</span></tt> : The barcode length to simulate.</p>
-<p><tt class="docutils literal"><span class="pre">--iterations=&lt;int&gt;</span></tt> : The number of sequencing runs to simulate.  Typically 1000.</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--error-rate=<var>&lt;float&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The error rate to simulate.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--output=<var>FILE</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The path to the output file.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--read-count=<var>&lt;int&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The read count to simulate.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--barcode-length=<var>&lt;int&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The barcode length to simulate.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--iterations=<var>&lt;int&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The number of sequencing runs to simulate.  Typically 1000.</td></tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="output">
 <h3>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h3>
-<p>Output files are sparsely formatted with no header (added below as a comment to illustrate the column content). The values returned are number of reads in each category:</p>
+<p>Output files are sparsely formatted with no header (added below as a comment to
+illustrate the column content). The values returned are number of reads in each
+category:</p>
 <div class="highlight-none"><div class="highlight"><pre>#0 error, 1 error, 2 error, 3 error, 4 error, 5 error, 6 error, 7 error
 941471,57167,1345,17,0,0,0,0
 941547,56940,1491,22,0,0,0,0
@@ -87,19 +120,39 @@
 </div>
 <div class="section" id="determining-the-number-of-flows-per-sequence-tag">
 <span id="flows"></span><h2>Determining the number of flows per sequence tag<a class="headerlink" href="#determining-the-number-of-flows-per-sequence-tag" title="Permalink to this headline">¶</a></h2>
-<p>This program returns the number of flows required to sequence input sequence tags:</p>
-<div class="highlight-bash"><div class="highlight"><pre>python get_tag_flows_for_454.py
-    --input edittag/test-data/edit_metric_tags.txt --section <span class="s1">&#39;4nt ed3&#39;</span>
+<p>This program returns the number of flows required to sequence input sequence
+tags:</p>
+<div class="highlight-bash"><div class="highlight"><pre>python get_tag_flows_for_454.py <span class="se">\</span>
+    --input edittag/test-data/edit_metric_tags.txt <span class="se">\</span>
+    --section <span class="s1">&#39;4nt ed3&#39;</span>
 </pre></div>
 </div>
 <div class="section" id="id2">
 <h3>Options<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--input=&lt;FILE&gt;</span></tt> : The input file to check.  The format must follow guidelines in <a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</p>
-<p><tt class="docutils literal"><span class="pre">--section=&lt;string&gt;</span></tt> : The section of tags to apply to the adapter sequence.  Used when an input file contains many sections of tags, and you only want to check one.  When the input file contains multiple sections, and you do not pass this option, the program will output adapters with all the sequence tags in <tt class="docutils literal"><span class="pre">--input</span></tt>.</p>
+<table class="docutils option-list" frame="void" rules="none">
+<col class="option" />
+<col class="description" />
+<tbody valign="top">
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--input=<var>&lt;FILE&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The input file to check.  The format must follow guidelines in
+<a class="reference internal" href="formatting.html#formatting"><em>Input file formatting</em></a>.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--section=<var>&lt;string&gt;</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>The section of tags to apply to the adapter sequence.  Used
+when an input file contains many sections of tags, and you only want to check
+one.  When the input file contains multiple sections, and you do not pass this
+option, the program will output adapters with all the sequence tags in
+<tt class="docutils literal"><span class="pre">--input</span></tt>.</td></tr>
+</tbody>
+</table>
 </div>
 <div class="section" id="id3">
 <h3>Output<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
-<p>Output is sent to standard out, and reports the tag name, tag sequence, and number of flows for the section(s) passed as options:</p>
+<p>Output is sent to standard out, and reports the tag name, tag sequence, and
+number of flows for the section(s) passed as options:</p>
 <div class="highlight-none"><div class="highlight"><pre>tag4    CCTA    9
 tag5    CGAT    10
 tag6    TGTG    10
@@ -138,7 +191,7 @@ tag3    AGGA    12
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="formatting.html" title="previous chapter">Input file formatting</a></li>
+      <li>Previous: <a href="using_primers.html" title="previous chapter">Adding sequence tags to PCR primers</a></li>
       <li>Next: <a href="license.html" title="next chapter">License</a></li>
   </ul></li>
 </ul>
