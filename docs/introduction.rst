@@ -67,4 +67,4 @@ Although optional, we **strongly** recommend installation of
 py-levenshtein, which is a C-module for python that speeds computation
 of the Levenshtein distance between strings.
 
-.. _edittag: httpd://github.com/faircloth-lab/edittag/
+.. _edittag: https://github.com/faircloth-lab/edittag/
