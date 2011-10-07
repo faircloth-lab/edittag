@@ -6,10 +6,17 @@ Designing edit metric tags
 
 You can design sequence tags of arbitrary length by invoking
 ``design_edit_metric_tags.py`` using something similar to the
-following::
+following:
 
-    design_edit_metric_tags.py --tag-length=6 --edit-distance=3 \
-        --no-polybase --gc --comp --use-c --min-and-greater
+.. code-block:: bash
+
+    design_edit_metric_tags.py \
+        --tag-length=6 \
+        --edit-distance=3 \
+        --no-polybase \
+        --gc \
+        --comp \
+        --min-and-greater
 
 We describe each option (``design_edit_metric_tags.py --help``) in
 detail, below.  We have separated these options into those pertinent to
@@ -20,7 +27,7 @@ detail, below.  We have separated these options into those pertinent to
 Tag design options
 ******************
 
---output=<file>  Path to the output file, in which to store the results 
+--output=<FILE>  Path to the output file, in which to store the results 
   of a particular run.  When not provided, results are written to stdout.
 
 --tag-length=<int>  Length of the desired sequence tag.  The results
@@ -38,24 +45,23 @@ Tag design options
 --processors=<int>  The number of computing cores/processors to use.
   This defaults to max(cores) - 2.
 
+--no-polybase  Filter those tags having greater than two adjacent,
+  identical bases. Homopolymer bases are problematic on certain
+  sequencing platforms, thus it is useful to avoid homopolymer runs longer
+  than three.
+
 --gc  Filter those tags having 40 < GC % < 60.
 
 --comp  Filter those tags that are perfect self-complements.  Generally,
   this option removes tags likely to form hairpins.
+
+--hamming  Use Hamming distance in place of edit (Levenshtein) distance.
 
 --min-and-greater  Return all tags at the minimum edit distance
   requested, and subsets of those tags falling within consecutively
   greater edit distance categories.  Thus, if you design 8 nucleotide,
   edit distance 3 tags and pass this option, the program will return all
   subsets of these tags having edit distances in the ``set([3,4,5,6,7])``.
-
---no-polybases  Filter those tags having greater than two adjacent,
-  identical bases. Homopolymer bases are problematic on certain
-  sequencing platforms, thus it is useful to avoid homopolymer runs longer
-  than three.
-
---hamming  Use Hamming distance in place of edit (Levenshtein) distance.
-
 
 
 .. _tag-rescanning:
@@ -83,10 +89,15 @@ sequencing step on certain platforms is not run for sufficiently long
 (and only gathers data from the first six bases of the index instead of
 all 10).  You can rescan a sequence tag file, outputting those tags
 where the first six nucleotides are edit distance three from one another
-using::
+using:
 
-    python design_edit_metric_tags.py --rescane=FILE --edit-distance=3 \
-        --min-and-greater --rescan-length=6
+.. code-block:: bash
+
+    python design_edit_metric_tags.py \
+        --rescan my_file_to_rescan.txt \
+        --edit-distance=3 \
+        --min-and-greater \
+        --rescan-length=6
 
 --rescan=<FILE>  Path to the input file, containing edit metric sequence
   tags, that you wish you rescan.
