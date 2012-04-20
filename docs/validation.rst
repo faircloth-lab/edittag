@@ -1,6 +1,6 @@
-.. validating:
+.. _validating:
 
-***************************
+
 Validating edit metric tags
 ***************************
 
