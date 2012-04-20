@@ -145,18 +145,25 @@ def get_section_results(options, bad, tags, section, vector_distance):
         bad = get_all_distances(bad, section, tags, vector_distance, options.verbose)
     return bad
 
-def show_results(options, bad):
+def show_results(conf, options, bad):
     """pretty print results from our bad tag dictionary"""
     sections = bad.keys()
     sections.sort()
     if options.minimums:
         if options.verbose:
             for sec in sections:
+                name_map = {v:k for k,v in conf.items(sec)}
                 print "[{0}]\n\tMinimum edit distance of set = {1}".format(sec, bad[sec]['minimum'])
                 print "\tTag pairs at the minimum distance:"
                 for comparison in bad[sec]['tags']:
                     for tag in comparison[1]:
-                        print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, bad[sec]['minimum'])
+                        print "\t\t{0},{1} :: {2},{3} - Edit Distance = {4}".format(
+                                name_map[comparison[0]],
+                                comparison[0],
+                                name_map[tag],
+                                tag,
+                                bad[sec]['minimum']
+                            )
         else:
             for sec in sections:
                 print "[{0}]\n\tminimum edit distance = {1}".format(sec, bad[sec]['minimum'])
@@ -209,7 +216,7 @@ def main():
     elif options.section:
         tags = get_tag_array(conf.items(options.section))
         bad = get_section_results(options, bad, tags, options.section, vector_distance)
-    show_results(options, bad)
+    show_results(conf, options, bad)
     
 if __name__ == '__main__':
     main()
