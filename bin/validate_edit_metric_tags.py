@@ -153,58 +153,62 @@ def get_section_results(options, bad, tags, section, vector_distance):
     return bad
 
 
-def show_results(conf, options, names, tags, bad):
+def print_minimums(conf, names, tags, bad, verbose=True):
     """pretty print results from our bad tag dictionary"""
     sections = bad.keys()
     sections.sort()
-    if options.minimums:
-        if options.verbose:
-            for sec in sections:
-                print "[{0}]\n\tMinimum edit distance of set = {1}".format(sec, bad[sec]['minimum'])
-                print "\tTag pairs at the minimum distance:"
-                for comparison in bad[sec]['tags']:
-                    #pdb.set_trace()
-                    for bad_tag in comparison[1]:
-                        print "\t\t{0},{1} :: {2},{3} - Edit Distance = {4}".format(
-                                names[comparison[0]],
-                                tags[comparison[0]],
-                                names[bad_tag],
-                                tags[bad_tag],
-                                bad[sec]['minimum']
-                            )
-        else:
-            for sec in sections:
-                print "[{0}]\n\tminimum edit distance = {1}".format(sec, bad[sec]['minimum'])
-    elif options.distances:
+    if verbose:
         for sec in sections:
-            if options.verbose:
-                comparisons = bad[sec]['tags']
-                distances = []
-                for c in comparisons:
-                    distances.extend(c[1].values())
-                distances = numpy.array(distances)
-            else:
-                distances = numpy.array(bad[sec]['tags'])
-            summary = numpy.bincount(distances)
-            mode = [i for i in numpy.where(summary == max(summary))[0]]
-            print "[{0}]\n\tMinimum edit distance:\t\t{1}".format(sec, min(distances))
-            print "\tModal edit distance:\t\t{0}".format(mode)
-            print "\tMax edit distance:\t\t{0}".format(max(distances))
-            print "\n\tDistribution of edit distance comparisons:\n"
-            print "\t\t  Edit Distance  Count "
-            print "\t\t|--------------|------|"
-            for k, v in enumerate(summary):
-                fh = ' ' * (14 - len(str(k)))
-                bh = ' ' * (6 - len(str(v)))
-                print "\t\t|{0}{1}|{2}{3}|".format(fh, k, bh, v)
-            print "\t\t-----------------------\n\n"
+            print "[{0}]\n\tMinimum edit distance of set = {1}".format(sec, bad[sec]['minimum'])
+            print "\tTag pairs at the minimum distance:"
+            for comparison in bad[sec]['tags']:
+                #pdb.set_trace()
+                for bad_tag in comparison[1]:
+                    print "\t\t{0},{1} :: {2},{3} - Edit Distance = {4}".format(
+                            names[comparison[0]],
+                            tags[comparison[0]],
+                            names[bad_tag],
+                            tags[bad_tag],
+                            bad[sec]['minimum']
+                        )
+    else:
+        for sec in sections:
+            print "[{0}]\n\tminimum edit distance = {1}".format(sec, bad[sec]['minimum'])
+
+
+def print_distances(conf, options, names, tags, bad):
+    """pretty print results from our bad tag dictionary"""
+    sections = bad.keys()
+    sections.sort()
+    for sec in sections:
         if options.verbose:
-            for sec in sections:
-                print "[{0}]".format(sec)
-                print "\tTag comparisons:"
-                for comparison in bad[sec]['tags']:
-                    for tag in comparison[1]:
-                        print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, comparison[1][tag])
+            comparisons = bad[sec]['tags']
+            distances = []
+            for c in comparisons:
+                distances.extend(c[1].values())
+            distances = numpy.array(distances)
+        else:
+            distances = numpy.array(bad[sec]['tags'])
+        summary = numpy.bincount(distances)
+        mode = [i for i in numpy.where(summary == max(summary))[0]]
+        print "[{0}]\n\tMinimum edit distance:\t\t{1}".format(sec, min(distances))
+        print "\tModal edit distance:\t\t{0}".format(mode)
+        print "\tMax edit distance:\t\t{0}".format(max(distances))
+        print "\n\tDistribution of edit distance comparisons:\n"
+        print "\t\t  Edit Distance  Count "
+        print "\t\t|--------------|------|"
+        for k, v in enumerate(summary):
+            fh = ' ' * (14 - len(str(k)))
+            bh = ' ' * (6 - len(str(v)))
+            print "\t\t|{0}{1}|{2}{3}|".format(fh, k, bh, v)
+        print "\t\t-----------------------\n\n"
+    if options.verbose:
+        for sec in sections:
+            print "[{0}]".format(sec)
+            print "\tTag comparisons:"
+            for comparison in bad[sec]['tags']:
+                for tag in comparison[1]:
+                    print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, comparison[1][tag])
 
 
 def main():
@@ -226,7 +230,10 @@ def main():
         tags = get_tag_array(conf.items(options.section))
         names = get_name_array(conf.items(options.section))
         bad = get_section_results(options, bad, tags, options.section, vector_distance)
-    show_results(conf, options, names, tags, bad)
+    if options.minimums:
+        print_minimums(conf, names, tags, bad, options.verbose)
+    elif options.distances:
+        print_distances(conf, options, names, tags, bad)
 
 
 if __name__ == '__main__':
