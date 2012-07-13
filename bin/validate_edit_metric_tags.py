@@ -70,25 +70,23 @@ def interface():
 
     p = optparse.OptionParser(usage)
 
-    p.add_option('--input', dest = 'input', action='store', \
-        type='string', default = None, \
+    p.add_option('--input', dest='input', action='store', \
+        type='string', default=None, \
         help='The path to the configuration file.', \
         metavar='FILE')
-    p.add_option('--section', dest = 'section', action = 'store',\
-        type='string', default = None, \
-        help='[Optional] The section of the config file to evaluate')   
-    p.add_option('--minimums', dest = 'minimums', action='store_true', default=True, 
+    p.add_option('--section', dest='section', action='store',\
+        type='string', default=None, \
+        help='[Optional] The section of the config file to evaluate')
+    p.add_option('--minimums', dest='minimums', action='store_true', default=True,
         help='[Default] Compute and return only the minimum edit distances in the set of tags')
-    p.add_option('--all-distances', dest = 'distances', action='store_true', default=False, 
+    p.add_option('--all-distances', dest='distances', action='store_true', default=False,
         help='[Optional] Compute and return all pairwise distances between the membrs in a set of tags')
-    p.add_option('--verbose', dest = 'verbose', action='store_true', default=False, 
+    p.add_option('--verbose', dest='verbose', action='store_true', default=False,
         help='[Optional] Print pairs of tags with either the minimum edit distance or all'
-        +' combinations of pairwise distances')
-    p.add_option('--hamming', dest = 'hamming', action='store_true', 
+        + ' combinations of pairwise distances')
+    p.add_option('--hamming', dest='hamming', action='store_true',
         default=False, help='[Optional] Use Hamming distance in place of Levenshtein distance.')
-
-    (options,arg) = p.parse_args()
-    
+    (options, arg) = p.parse_args()
     if options.distances:
         options.minimums = False
     if not options.input or not os.path.isfile(os.path.expanduser(options.input)):
