@@ -5,6 +5,10 @@ def get_tag_array(tags):
     """return an array of sequence tags from the input file"""
     return numpy.array([t[1].split('#')[0] for t in tags])
 
+def get_name_array(tags):
+  """return an array of sequence tags from the input file"""
+  return numpy.array([t[0] for t in tags])
+
 def get_tag_dict(tags):
     """return a dictionary of sequence tag with names from the input file"""
     d = {}

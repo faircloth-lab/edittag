@@ -55,7 +55,7 @@ import numpy
 import optparse
 import ConfigParser
 
-from edittag.helpers import get_tag_array
+from edittag.helpers import get_tag_array, get_name_array
 try:
     from Levenshtein import distance
     from Levenshtein import hamming
@@ -105,21 +105,24 @@ def hammng(a, b):
     """return the hamming distance between a and b"""
     return hamming(a,b)
 
-def get_minimum_tags(bad, section, tags, vector_distance, verbose = False):
-    """return the minimum edit distance in the pairwise comparison of all 
-    sequence tags. if verbose, return all tags compared that are at the 
+
+def get_minimum_tags(bad, section, tags, vector_distance, verbose=False):
+    """return the minimum edit distance in the pairwise comparison of all
+    sequence tags. if verbose, return all tags compared that are at the
     minimum edit distance"""
+    bad[section]['minimum'] = 10000
+    bad[section]['tags'] = []
     for key, tag in enumerate(tags):
         if key + 1 < len(tags):
-            distances = vector_distance(tags[key+1:], tag)
-            if not bad[section]['minimum'] or min(distances) < bad[section]['minimum']:
+            distances = vector_distance(tags[key + 1:], tag)
+            if min(distances) < bad[section]['minimum']:
                 bad[section]['minimum'] = min(distances)
                 # reset the bad tags
                 bad[section]['tags'] = []
             # get any tags < minimum edit distance
             below = numpy.where(distances == bad[section]['minimum'])[0] + (key + 1)
-            if verbose and below.any():
-                bad[section]['tags'].append((tag, tags[below]))
+            if below.any() and verbose:
+                bad[section]['tags'].append((key, below))
     return bad
 
 def get_all_distances(bad, section, tags, vector_distance, verbose = False):
@@ -145,23 +148,24 @@ def get_section_results(options, bad, tags, section, vector_distance):
         bad = get_all_distances(bad, section, tags, vector_distance, options.verbose)
     return bad
 
-def show_results(conf, options, bad):
+
+def show_results(conf, options, names, tags, bad):
     """pretty print results from our bad tag dictionary"""
     sections = bad.keys()
     sections.sort()
     if options.minimums:
         if options.verbose:
             for sec in sections:
-                name_map = {v:k for k,v in conf.items(sec)}
                 print "[{0}]\n\tMinimum edit distance of set = {1}".format(sec, bad[sec]['minimum'])
                 print "\tTag pairs at the minimum distance:"
                 for comparison in bad[sec]['tags']:
-                    for tag in comparison[1]:
+                    #pdb.set_trace()
+                    for bad_tag in comparison[1]:
                         print "\t\t{0},{1} :: {2},{3} - Edit Distance = {4}".format(
-                                name_map[comparison[0]],
-                                comparison[0],
-                                name_map[tag],
-                                tag,
+                                names[comparison[0]],
+                                tags[comparison[0]],
+                                names[bad_tag],
+                                tags[bad_tag],
                                 bad[sec]['minimum']
                             )
         else:
@@ -212,11 +216,13 @@ def main():
     if not options.section:
         for section in conf.sections():
             tags = get_tag_array(conf.items(section))
+            names = get_name_array(conf.items(section))
             bad = get_section_results(options, bad, tags, section, vector_distance)
     elif options.section:
         tags = get_tag_array(conf.items(options.section))
+        names = get_name_array(conf.items(options.section))
         bad = get_section_results(options, bad, tags, options.section, vector_distance)
-    show_results(conf, options, bad)
+    show_results(conf, options, names, tags, bad)
     
 if __name__ == '__main__':
     main()
