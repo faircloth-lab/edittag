@@ -1,1 +1,5 @@
 v1,0 -- Initial release.
+v1,1 -- Fix an error using --minimum with validate_sequence_tags and multiple 
+        sections that would report erroneous (too high) edit distances for
+        certain tag combinations.  Also, change output to report tag name,
+        as well as tag sequence.
