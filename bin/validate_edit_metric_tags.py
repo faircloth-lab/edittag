@@ -97,13 +97,15 @@ def interface():
         sys.exit(2)
     return options, arg
 
+
 def levenshtein(a, b):
     """return the levenshtein/edit distance between a and b"""
-    return distance(a,b)
+    return distance(a, b)
+
 
 def hammng(a, b):
     """return the hamming distance between a and b"""
-    return hamming(a,b)
+    return hamming(a, b)
 
 
 def get_minimum_tags(bad, section, tags, vector_distance, verbose=False):
@@ -125,23 +127,25 @@ def get_minimum_tags(bad, section, tags, vector_distance, verbose=False):
                 bad[section]['tags'].append((key, below))
     return bad
 
-def get_all_distances(bad, section, tags, vector_distance, verbose = False):
+
+def get_all_distances(bad, section, tags, vector_distance, verbose=False):
     """compute and return the levenshtein distances between all pairwise
     combinations of tags"""
     bad[section]['tags'] = []
     for key, tag in enumerate(tags):
         if key + 1 < len(tags):
-            distances = vector_distance(tags[key+1:], tag)
+            distances = vector_distance(tags[key + 1:], tag)
             if not verbose:
                 bad[section]['tags'].extend(distances)
             else:
-                distance_dict = dict(zip(tags[key+1:], distances))
+                distance_dict = dict(zip(tags[key + 1:], distances))
                 bad[section]['tags'].append((tag, distance_dict))
     return bad
 
+
 def get_section_results(options, bad, tags, section, vector_distance):
     """helper function that runs comparisons on a per section basis"""
-    bad[section] = {'minimum':None}
+    bad[section] = {'minimum': None}
     if options.minimums:
         bad = get_minimum_tags(bad, section, tags, vector_distance, options.verbose)
     elif options.distances:
@@ -189,7 +193,7 @@ def show_results(conf, options, names, tags, bad):
             print "\n\tDistribution of edit distance comparisons:\n"
             print "\t\t  Edit Distance  Count "
             print "\t\t|--------------|------|"
-            for k,v in enumerate(summary):
+            for k, v in enumerate(summary):
                 fh = ' ' * (14 - len(str(k)))
                 bh = ' ' * (6 - len(str(v)))
                 print "\t\t|{0}{1}|{2}{3}|".format(fh, k, bh, v)
@@ -200,7 +204,7 @@ def show_results(conf, options, names, tags, bad):
                 print "\tTag comparisons:"
                 for comparison in bad[sec]['tags']:
                     for tag in comparison[1]:
-                         print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, comparison[1][tag])
+                        print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, comparison[1][tag])
 
 
 def main():
@@ -223,6 +227,7 @@ def main():
         names = get_name_array(conf.items(options.section))
         bad = get_section_results(options, bad, tags, options.section, vector_distance)
     show_results(conf, options, names, tags, bad)
-    
+
+
 if __name__ == '__main__':
     main()
