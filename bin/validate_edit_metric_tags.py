@@ -138,8 +138,10 @@ def get_all_distances(bad, section, tags, vector_distance, verbose=False):
             if not verbose:
                 bad[section]['tags'].extend(distances)
             else:
-                distance_dict = dict(zip(tags[key + 1:], distances))
-                bad[section]['tags'].append((tag, distance_dict))
+                # generate tag index list
+                idx = range(key + 1, len(tags))
+                distance_dict = dict(zip(idx, distances))
+                bad[section]['tags'].append((key, distance_dict))
     return bad
 
 
@@ -161,14 +163,13 @@ def print_minimums(conf, names, tags, bad, verbose=True):
         for sec in sections:
             print "[{0}]\n\tMinimum edit distance of set = {1}".format(sec, bad[sec]['minimum'])
             print "\tTag pairs at the minimum distance:"
-            for comparison in bad[sec]['tags']:
-                #pdb.set_trace()
-                for bad_tag in comparison[1]:
+            for base, compare in bad[sec]['tags']:
+                for idx in compare:
                     print "\t\t{0},{1} :: {2},{3} - Edit Distance = {4}".format(
-                            names[comparison[0]],
-                            tags[comparison[0]],
-                            names[bad_tag],
-                            tags[bad_tag],
+                            names[base],
+                            tags[base],
+                            names[idx],
+                            tags[idx],
                             bad[sec]['minimum']
                         )
     else:
@@ -176,7 +177,7 @@ def print_minimums(conf, names, tags, bad, verbose=True):
             print "[{0}]\n\tminimum edit distance = {1}".format(sec, bad[sec]['minimum'])
 
 
-def print_distances(conf, options, names, tags, bad):
+def print_distances(conf, options, names, tags, bad, verbose=True):
     """pretty print results from our bad tag dictionary"""
     sections = bad.keys()
     sections.sort()
@@ -206,9 +207,15 @@ def print_distances(conf, options, names, tags, bad):
         for sec in sections:
             print "[{0}]".format(sec)
             print "\tTag comparisons:"
-            for comparison in bad[sec]['tags']:
-                for tag in comparison[1]:
-                    print "\t\t{0} :: {1} - Edit Distance = {2}".format(comparison[0], tag, comparison[1][tag])
+            for base, compare in bad[sec]['tags']:
+                for idx, distance in compare.iteritems():
+                    print "\t\t{0},{1} :: {2},{3} - Edit Distance = {4}".format(
+                            names[base],
+                            tags[base],
+                            names[idx],
+                            tags[idx],
+                            distance
+                        )
 
 
 def main():
@@ -233,7 +240,7 @@ def main():
     if options.minimums:
         print_minimums(conf, names, tags, bad, options.verbose)
     elif options.distances:
-        print_distances(conf, options, names, tags, bad)
+        print_distances(conf, options, names, tags, bad, options.verbose)
 
 
 if __name__ == '__main__':
