@@ -1,4 +1,4 @@
-Copyright (c) 2009-2011 Brant C. Faircloth. All rights reserved.
+Copyright (c) 2009-2012 Brant C. Faircloth. All rights reserved.
 
 -  See **LICENSE.md** for standard computer code.
 
