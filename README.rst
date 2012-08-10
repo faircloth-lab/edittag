@@ -40,10 +40,6 @@ Faircloth BC, Glenn TC. 2012. Not all sequence tags are created equal: Designing
 and validating sequence identification tags robust to indels. PLoS ONE 7(8): e42543.
 doi: `10.1371/journal.pone.0042543`_
 
-Faircloth BC, Glenn TC.  Large sets of edit-metric sequence identification 
-tags to facilitate large-scale multiplexing of reads from massively 
-parallel sequencing.  `http://precedings.nature.com/documents/5672/version/1`_
-
 Dependencies
 ------------
 
