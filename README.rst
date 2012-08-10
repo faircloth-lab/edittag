@@ -36,6 +36,10 @@ http://faircloth-lab.github.com/edittag/
 Citation
 --------
 
+Faircloth BC, Glenn TC. 2012. Not all sequence tags are created equal: Designing
+and validating sequence identification tags robust to indels. PLoS ONE 7(8): e42543.
+doi: `10.1371/journal.pone.0042543`_
+
 Faircloth BC, Glenn TC.  Large sets of edit-metric sequence identification 
 tags to facilitate large-scale multiplexing of reads from massively 
 parallel sequencing.  `http://precedings.nature.com/documents/5672/version/1`_
@@ -140,7 +144,7 @@ Using edittag
 
 
 .. _`https://github.com/BadDNA/edittag/downloads`: https://github.com/BadDNA/edittag/downloads
-.. _`http://precedings.nature.com/documents/5672/version/1`: http://precedings.nature.com/documents/5672/version/1
+.. _`10.1371/journal.pone.0042543`: http://dx.plos.org/10.1371/journal.pone.0042543
 .. _Creative Commons Attribution 3.0 United States License: http://creativecommons.org/licenses/by/3.0/us/
 .. _text: https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.txt
 .. _csv: https://github.com/downloads/faircloth-lab/edittag/edit_metric_tags.csv
