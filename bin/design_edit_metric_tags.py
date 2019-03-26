@@ -454,7 +454,7 @@ def main():
     distances = None
     for filename in results:
         temp_array = cPickle.load(open(filename[1]))
-        if distances == None:
+        if distances is None:
             distances = temp_array
         else:
             distances = numpy.vstack((distances, temp_array))
